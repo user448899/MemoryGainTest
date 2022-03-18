@@ -16,9 +16,13 @@ class Ui_main_win(object):
         self.temp_path = tempfile.gettempdir()
 
     def setupUi(self):
-        # File checker.
+        # File and directory checker.
+        memorygaindir_on_device = os.path.exists(f"{self.temp_path}\\..\\MemoryGain")
         cards_on_device = os.path.exists(f"{self.temp_path}\\..\\MemoryGain\\cards.txt")
         decks_on_device = os.path.exists(f"{self.temp_path}\\..\\MemoryGain\\decks.txt")
+
+        if not memorygaindir_on_device:
+            os.system(f"md {self.temp_path}\\..\\MemoryGain")
 
         if not cards_on_device:
             os.system(f"null > {self.temp_path}\\..\\MemoryGain\\cards.txt")
@@ -64,7 +68,7 @@ class Ui_main_win(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.main_win.sizePolicy().hasHeightForWidth())
         self.main_win.setSizePolicy(sizePolicy)
-        self.main_win.setMinimumSize(QtCore.QSize(350, 400))
+        self.main_win.setMinimumSize(QtCore.QSize(700, 400))
         self.main_win.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.main_win.setStyleSheet("""
                                 QMainWindow#main_win{
