@@ -1,3 +1,22 @@
+"""
+Joshua Chick. Memory Gain is a flashcards app.
+Copyright (C) 2022 Joshua Chick
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
+
 import time
 from threading import Thread
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -31,6 +50,7 @@ class Ui_main_win(object):
             os.system(f"null > {self.temp_path}\\..\\MemoryGain\\decks.txt")
 
         # Update checker.
+        going_to_update = False
         try:
             html = urllib.request.urlopen("https://memorygain.app")
             if "Test version 0.0.0" not in str(html.read()):
@@ -39,12 +59,17 @@ class Ui_main_win(object):
                 self.update_msg.setText(
                     "There is an updated version available at https://memorygain.app. Would you like to download the updated version?")
                 self.update_msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+                self.update_msg.setIcon(QtWidgets.QMessageBox.Information)
                 self.update_msg.exec_()
                 if self.update_msg.clickedButton().text() == "&Yes":
+                    going_to_update = True
                     os.system("START https://memorygain.app")
 
         except:
             pass
+
+        if going_to_update:
+            sys.exit()
 
         # Main window.
         self.main_win = QtWidgets.QMainWindow()
@@ -224,6 +249,7 @@ class Ui_main_win(object):
 
         _translate = QtCore.QCoreApplication.translate
         self.main_win.setWindowTitle(_translate("main_win", "Memory Gain"))
+        self.main_win.setIconSize(QtCore.QSize(0, 0))
         self.main_win.setWindowIcon(QtGui.QIcon("feather\\layers.svg"))
 
         self.main_win.show()
