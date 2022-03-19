@@ -1647,22 +1647,26 @@ class Ui_main_win(object):
             self.search_card_idxs = []
             cards = cards_text.read().split("DECK^^$=")
             cards.pop(0)
-            cards_count = len(cards)
-            for i in range(cards_count):
-                if deck in cards[i]:
-                    qst_onwards = cards[i].split("QUESTION^^$=")
+            cards_deck_and_rest = []
+            for i in range(len(cards)):
+                cards_deck_and_rest.append(cards[i][:cards[i].index("QUESTION^^$=")])
+                cards_deck_and_rest.append(cards[i][cards[i].index("QUESTION^^$="):])
+            for i in range(len(cards)):
+                if deck == cards_deck_and_rest[i*2]:
+                    qst_onwards = cards_deck_and_rest[i*2 + 1].split("QUESTION^^$=")
                     qst = qst_onwards[1].split("ANSWER^^$=")[0]
                     ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
                     if self.search_query in qst or self.search_query in ans:
                         self.search_card_idxs.append(i)
 
-            qst_onwards = cards[self.search_card_idxs[self.search_upto]].split("QUESTION^^$=")
-            qst = qst_onwards[1].split("ANSWER^^$=")[0]
-            ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
+            if len(self.search_card_idxs) != 0:
+                qst_onwards = cards[self.search_card_idxs[self.search_upto]].split("QUESTION^^$=")
+                qst = qst_onwards[1].split("ANSWER^^$=")[0]
+                ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
 
             cards_text.close()
 
-            if not self.showing:
+            if (not self.showing) and (len(self.search_card_idxs) != 0):
                 self.search_qst_label = QtWidgets.QLabel(self.search_win)
                 self.search_qst_label.setMinimumSize(QtCore.QSize(140, 25))
                 self.search_qst_label.setMaximumSize(QtCore.QSize(140, 25))
@@ -1853,10 +1857,19 @@ class Ui_main_win(object):
                 self.search_ans_text.setText(ans)
                 self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
 
-            else:
+            elif len(self.search_card_idxs) != 0:
                 self.search_qst_text.setText(qst)
                 self.search_ans_text.setText(ans)
                 self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
+
+            else:
+                msg = QtWidgets.QMessageBox()
+                msg.setWindowTitle("Not found")
+                center = QDesktopWidget().availableGeometry().center()
+                msg.move(center)
+                msg.setIcon(QtWidgets.QMessageBox.Information)
+                msg.setText("No card with that text was found.")
+                msg.exec_()
 
         else:
             msg = QtWidgets.QMessageBox()
