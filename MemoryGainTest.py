@@ -2444,7 +2444,7 @@ class Ui_main_win(object):
             center = QDesktopWidget().availableGeometry().center()
             msg.move(center)
             msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText("Please upgrade to the advanced version to unlock more that 10 decks (advanced version in development).")
+            msg.setText("This version of the Memory Gain application supports a maximum of 10 decks.")
             msg.exec_()
         else:
             decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "a")
