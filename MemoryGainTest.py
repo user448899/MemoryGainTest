@@ -53,7 +53,7 @@ class Ui_main_win(object):
         going_to_update = False
         try:
             html = urllib.request.urlopen("https://memorygain.app")
-            if "Test version 0.0.0" not in str(html.read()):
+            if "Test version 0.0.1" not in str(html.read()):
                 self.update_msg = QtWidgets.QMessageBox()
                 self.update_msg.setWindowTitle("Update")
                 self.update_msg.setText(
