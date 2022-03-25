@@ -53,7 +53,7 @@ class Ui_main_win(object):
         going_to_update = False
         try:
             html = urllib.request.urlopen("https://memorygain.app")
-            if "Test version 0.0.1" not in str(html.read()):
+            if "Test version 0.0.2" not in str(html.read()):
                 self.update_msg = QtWidgets.QMessageBox()
                 self.update_msg.setWindowTitle("Update")
                 self.update_msg.setText(
@@ -79,20 +79,14 @@ class Ui_main_win(object):
         cards_text.close()
         cards_parts.pop(0)
         num_to_study = 0
-        # Removes those not due today.
-        end_of_today = str(datetime.datetime.now())
-        end_of_today = datetime.datetime(int(end_of_today[:4]), int(end_of_today[5:7]), int(end_of_today[8:10]), 23, 59, 59, 999999)
+        today = str(datetime.datetime.now())
+        end_of_today = datetime.datetime(int(today[:4]), int(today[5:7]), int(today[8:10]), 23, 59, 59, 999999)
         for idx, part in enumerate(cards_parts):
             if idx % 2 == 0 and datetime.datetime.strptime(part, "%Y-%m-%d %H:%M:%S.%f") <= end_of_today:
                 num_to_study += 1
 
         self.main_win.setObjectName("main_win")
         self.main_win.resize(750, 600)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.main_win.sizePolicy().hasHeightForWidth())
-        self.main_win.setSizePolicy(sizePolicy)
         self.main_win.setMinimumSize(QtCore.QSize(700, 400))
         self.main_win.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.main_win.setStyleSheet("""
@@ -192,7 +186,7 @@ class Ui_main_win(object):
         font.setPointSize(12)
         decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
         decks_lines = decks_text.readlines()
-        for idx, i in enumerate(decks_lines):
+        for idx, deck in enumerate(decks_lines):
             self.deck_btn = QtWidgets.QPushButton(self.main_win_scrollAreaWidgetContents)
             self.deck_btn.setMinimumSize(QtCore.QSize(282, 40))
             self.deck_btn.setMaximumSize(QtCore.QSize(282, 40))
@@ -212,7 +206,7 @@ class Ui_main_win(object):
                                         }
                                         """)
             self.deck_btn.setObjectName("deck_btn")
-            self.deck_btn.setText("  " + i.replace("\n", ""))
+            self.deck_btn.setText("  " + deck.replace("\n", ""))
             self.main_win_verticalLayout.addWidget(self.deck_btn)
             if idx == 0:
                 self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(0))
@@ -241,29 +235,25 @@ class Ui_main_win(object):
         self.main_win_verticalLayout.addItem(main_win_spacer2)
         self.main_win_scrollArea.setWidget(self.main_win_scrollAreaWidgetContents)
         self.main_win_gridLayout.addWidget(self.main_win_scrollArea, 2, 1, 1, 1)
-        self.create_deck_btn.raise_()
-        self.main_win_scrollArea.raise_()
         self.main_win.setCentralWidget(self.main_win_centralwidget)
 
-        QtCore.QMetaObject.connectSlotsByName(self.main_win)
-
-        _translate = QtCore.QCoreApplication.translate
-        self.main_win.setWindowTitle(_translate("main_win", "Memory Gain"))
-        self.main_win.setIconSize(QtCore.QSize(0, 0))
+        self.main_win.setWindowTitle("Memory Gain")
         self.main_win.setWindowIcon(QtGui.QIcon("feather\\layers.svg"))
 
         self.main_win.show()
 
     def study_btn_clicked(self):
-        # Clears main_win
+        # Clears main_win. "main_win_centralwidget" is reassigned as so this function can be called when cancelling
+        # an edit from the study window.
         self.main_win_centralwidget = QtWidgets.QWidget()
         self.main_win_centralwidget.deleteLater()
 
-        # Closes Create deck window.
+        # Closes Create deck window. "create_deck_win" is reassigned as so this function can be called even if the
+        # create deck window is not open.
         self.create_deck_win = QtWidgets.QWidget()
         self.create_deck_win.close()
 
-        # Creates new main_win_centralwidget and main_win_gridLayout.
+        # Creates the study window contents.
         self.study_centralwidget = QtWidgets.QWidget()
         self.study_gridLayout = QtWidgets.QGridLayout(self.study_centralwidget)
 
@@ -465,16 +455,12 @@ class Ui_main_win(object):
         self.study_lower_horizontalLayout.addItem(spacerItem3)
         self.study_gridLayout.addLayout(self.study_lower_horizontalLayout, 2, 0, 1, 1)
 
-        QtCore.QMetaObject.connectSlotsByName(self.main_win)
-
-        _translate = QtCore.QCoreApplication.translate
-
-        self.main_win.setWindowTitle(_translate("study_win", "Memory Gain - Study"))
-        self.study_home_btn.setText(_translate("study_win", "Home"))
-        self.study_edit_btn.setText(_translate("study_win", "Edit"))
-        self.again_btn.setText(_translate("study_win", "Again"))
-        self.show_ans_btn.setText(_translate("study_win", "Answer"))
-        self.correct_btn.setText(_translate("study_win", "Correct"))
+        self.main_win.setWindowTitle("Memory Gain - Study")
+        self.study_home_btn.setText("Home")
+        self.study_edit_btn.setText("Edit")
+        self.again_btn.setText("Again")
+        self.show_ans_btn.setText("Answer")
+        self.correct_btn.setText("Correct")
 
         self.main_win.setCentralWidget(self.study_centralwidget)
 
@@ -641,13 +627,12 @@ class Ui_main_win(object):
 
         self.edit_win_gridLayout.addLayout(self.edit_win_horizontalLayout, 1, 0, 1, 1)
 
-        _translate = QtCore.QCoreApplication.translate
-        self.main_win.setWindowTitle(_translate("edit_win", "Memory Gain - Study - Edit"))
-        self.edit_qst_label.setText(_translate("edit_win", "Question:"))
-        self.edit_ans_label.setText(_translate("edit_win", "Answer:"))
-        self.edit_save_btn.setText(_translate("edit_win", "Save"))
-        self.edit_del_btn.setText(_translate("edit_win", "Delete"))
-        self.edit_back_btn.setText(_translate("edit_win", "Cancel"))
+        self.main_win.setWindowTitle("Memory Gain - Study - Edit")
+        self.edit_qst_label.setText("Question:")
+        self.edit_ans_label.setText("Answer:")
+        self.edit_save_btn.setText("Save")
+        self.edit_del_btn.setText("Delete")
+        self.edit_back_btn.setText("Cancel")
 
         self.main_win.setCentralWidget(self.edit_centralwidget)
 
@@ -668,8 +653,9 @@ class Ui_main_win(object):
                 store_list = [cards_parts[i - 6], cards_parts[i - 5], cards_parts[i - 4], cards_parts[i - 3], cards_parts[i - 2], cards_parts[i - 1], cards_parts[i]]
                 cards.append(store_list)
 
+        # Only has to check that the deck and question match, as there cannot be a duplicate question in a deck.
         for idx, card in enumerate(cards):
-            if card[0] == self.got_card[0] and card[1] == self.got_card[1]:
+            if (card[0] == self.got_card[0]) and (card[1] == self.got_card[1]):
                 cards.pop(idx)
 
         cards_to_write = []
@@ -680,6 +666,7 @@ class Ui_main_win(object):
         cards_text.writelines(cards_to_write)
         cards_text.close()
 
+        # Reverts back to the study window.
         self.edit_centralwidget.deleteLater()
         self.study_btn_clicked()
 
@@ -701,7 +688,7 @@ class Ui_main_win(object):
                 cards.append(store_list)
 
         for card in cards:
-            if card[0] == self.got_card[0] and card[1] == self.got_card[1]:
+            if (card[0] == self.got_card[0]) and (card[1] == self.got_card[1]):
                 card[1] = self.edit_qst_text.toPlainText()
                 card[2] = self.edit_ans_text.toPlainText()
                 break
@@ -737,27 +724,19 @@ class Ui_main_win(object):
         self.study_qst_label.setText(card[1])
 
     def study_home_btn_clicked(self):
-
         # Finds how many are due today.
         cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
         cards_parts = re.split("DUE\^\^\$=|INTERVAL\^\^\$=", cards_text.read())
         cards_text.close()
         cards_parts.pop(0)
         num_to_study = 0
-        # Removes those not due today.
-        end_of_today = str(datetime.datetime.now())
-        end_of_today = datetime.datetime(int(end_of_today[:4]), int(end_of_today[5:7]), int(end_of_today[8:10]), 23, 59,
-                                         59, 999999)
+        today = str(datetime.datetime.now())
+        end_of_today = datetime.datetime(int(today[:4]), int(today[5:7]), int(today[8:10]), 23, 59, 59, 999999)
         for idx, part in enumerate(cards_parts):
-            if idx % 2 == 0 and datetime.datetime.strptime(part, "%Y-%m-%d %H:%M:%S.%f") <= end_of_today:
+            if (idx % 2 == 0) and (datetime.datetime.strptime(part, "%Y-%m-%d %H:%M:%S.%f") <= end_of_today):
                 num_to_study += 1
 
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.main_win.sizePolicy().hasHeightForWidth())
-        self.main_win.setSizePolicy(sizePolicy)
-        self.main_win.setMinimumSize(QtCore.QSize(350, 400))
+        self.main_win.setMinimumSize(QtCore.QSize(700, 400))
         self.main_win.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.main_win.setStyleSheet("""
                                         QMainWindow#main_win{
@@ -913,8 +892,7 @@ class Ui_main_win(object):
 
         QtCore.QMetaObject.connectSlotsByName(self.main_win)
 
-        _translate = QtCore.QCoreApplication.translate
-        self.main_win.setWindowTitle(_translate("main_win", "Memory Gain"))
+        self.main_win.setWindowTitle("Memory Gain")
         self.main_win_centralwidget.show()
 
     def show_ans_btn_clicked(self):
@@ -936,7 +914,6 @@ class Ui_main_win(object):
         elif self.got_card[6] == "G":
             self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=int(float(self.got_card[3]) * int(self.got_card[5]))))
             self.got_card[5] = str(int(float(self.got_card[3]) * int(self.got_card[5])))
-            self.got_card[6] = "G"
             self.write_card_ac()
         elif self.got_card[6] == "l":
             self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=10))
@@ -1055,8 +1032,8 @@ class Ui_main_win(object):
             cards_parts.pop(0)
             cards_text.close()
             # Removes those not due today.
-            end_of_today = str(datetime.datetime.now())
-            end_of_today = datetime.datetime(int(end_of_today[:4]), int(end_of_today[5:7]), int(end_of_today[8:10]), 23, 59, 59, 999999)
+            today = str(datetime.datetime.now())
+            end_of_today = datetime.datetime(int(today[:4]), int(today[5:7]), int(today[8:10]), 23, 59, 59, 999999)
             i = 0
             while i < len(cards_parts):
                 if i % 7 == 4 and datetime.datetime.strptime(cards_parts[i], "%Y-%m-%d %H:%M:%S.%f") > end_of_today:
@@ -1234,11 +1211,6 @@ class Ui_main_win(object):
         self.add_cards_btn.clicked.connect(lambda: self.add_cards_btn_clicked(deck))
 
         self.search_deck_btn = QtWidgets.QPushButton()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.search_deck_btn.sizePolicy().hasHeightForWidth())
-        self.search_deck_btn.setSizePolicy(sizePolicy)
         self.search_deck_btn.setMinimumSize(QtCore.QSize(300, 40))
         self.search_deck_btn.setMaximumSize(QtCore.QSize(300, 40))
         font = QtGui.QFont()
@@ -1263,11 +1235,6 @@ class Ui_main_win(object):
         self.search_deck_btn.clicked.connect(lambda: self.search_deck_btn_clicked(deck))
 
         self.del_deck_btn = QtWidgets.QPushButton()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.del_deck_btn.sizePolicy().hasHeightForWidth())
-        self.del_deck_btn.setSizePolicy(sizePolicy)
         self.del_deck_btn.setMinimumSize(QtCore.QSize(300, 40))
         self.del_deck_btn.setMaximumSize(QtCore.QSize(300, 40))
         font = QtGui.QFont()
@@ -1317,13 +1284,12 @@ class Ui_main_win(object):
 
         self.main_win_gridLayout.addLayout(self.deck_win_verticalLayout, 1, 1, 1, 1)
 
-        _translate = QtCore.QCoreApplication.translate
         self.main_win.setWindowTitle(f"{deck} deck")
         self.deck_label.setText(f"{deck}")
-        self.add_cards_btn.setText(_translate("deck_win", "Add cards"))
-        self.search_deck_btn.setText(_translate("deck_win", "Search"))
-        self.del_deck_btn.setText(_translate("deck_win", "Delete"))
-        self.back_decks_btn.setText(_translate("deck_win", "Home"))
+        self.add_cards_btn.setText("Add cards")
+        self.search_deck_btn.setText("Search")
+        self.del_deck_btn.setText("Delete")
+        self.back_decks_btn.setText("Home")
 
         self.main_win.setWindowIcon(QtGui.QIcon("feather\\layers.svg"))
 
@@ -1338,7 +1304,6 @@ class Ui_main_win(object):
 
     def del_deck_msg_clicked(self, btn, deck):
         if btn.text() == "OK":
-
             decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
             decks_lines = decks_text.readlines()
             index = decks_lines.index(deck + "\n")
@@ -1383,18 +1348,15 @@ class Ui_main_win(object):
             self.del_deck_btn.deleteLater()
             self.add_cards_btn.deleteLater()
 
-            ######################################### Re-draws main_win ###################################################
+            # Re-draws main_win.
             # Finds how many are due today.
             cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
             cards_parts = re.split("DUE\^\^\$=|INTERVAL\^\^\$=", cards_text.read())
             cards_text.close()
             cards_parts.pop(0)
             num_to_study = 0
-            # Removes those not due today.
-            end_of_today = str(datetime.datetime.now())
-            end_of_today = datetime.datetime(int(end_of_today[:4]), int(end_of_today[5:7]), int(end_of_today[8:10]), 23,
-                                             59,
-                                             59, 999999)
+            today = str(datetime.datetime.now())
+            end_of_today = datetime.datetime(int(today[:4]), int(today[5:7]), int(today[8:10]), 23, 59, 59, 999999)
             for idx, part in enumerate(cards_parts):
                 if idx % 2 == 0 and datetime.datetime.strptime(part, "%Y-%m-%d %H:%M:%S.%f") <= end_of_today:
                     num_to_study += 1
@@ -1413,19 +1375,19 @@ class Ui_main_win(object):
             font.setPointSize(12)
             self.create_deck_btn.setFont(font)
             self.create_deck_btn.setStyleSheet("""
-                                                                        QPushButton#create_deck_btn{
-                                                                            background-color:transparent;
-                                                                            border-radius: 15px;
-                                                                            border: 1px solid white;
-                                                                            color: white;
-                                                                        }
-                                                                        QPushButton#create_deck_btn:hover{
-                                                                            background-color: rgba(255, 255, 255, 0.1);
-                                                                        }
-                                                                        QPushButton#create_deck_btn:pressed{
-                                                                            background-color: rgba(255, 255, 255, 0.2);
-                                                                        }
-                                                                        """)
+                                                QPushButton#create_deck_btn{
+                                                    background-color:transparent;
+                                                    border-radius: 15px;
+                                                    border: 1px solid white;
+                                                    color: white;
+                                                }
+                                                QPushButton#create_deck_btn:hover{
+                                                    background-color: rgba(255, 255, 255, 0.1);
+                                                }
+                                                QPushButton#create_deck_btn:pressed{
+                                                    background-color: rgba(255, 255, 255, 0.2);
+                                                }
+                                                """)
             self.create_deck_btn.clicked.connect(lambda: self.create_deck_btn_clicked())
             self.create_deck_btn.setText("Create deck")
             self.main_win_gridLayout.addWidget(self.create_deck_btn, 0, 1, 1, 1)
@@ -1541,10 +1503,7 @@ class Ui_main_win(object):
             self.main_win_scrollArea.raise_()
             self.main_win.setCentralWidget(self.main_win_centralwidget)
 
-            QtCore.QMetaObject.connectSlotsByName(self.main_win)
-
-            _translate = QtCore.QCoreApplication.translate
-            self.main_win.setWindowTitle(_translate("main_win", "Memory Gain"))
+            self.main_win.setWindowTitle("Memory Gain")
             self.main_win.setWindowIcon(QtGui.QIcon("feather\\layers.svg"))
 
     def search_deck_btn_clicked(self, deck):
@@ -1622,7 +1581,6 @@ class Ui_main_win(object):
 
         self.search_win.setWindowIcon(QtGui.QIcon("feather\\search.svg"))
 
-        QtCore.QMetaObject.connectSlotsByName(self.search_win)
         self.search_win.show()
         self.showing = False
 
@@ -2053,13 +2011,10 @@ class Ui_main_win(object):
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.add_cards_horizontalLayout.addItem(spacerItem1)
 
-        QtCore.QMetaObject.connectSlotsByName(self.add_cards_win)
-
-        _translate = QtCore.QCoreApplication.translate
-        self.add_cards_win.setWindowTitle(_translate("add_cards_win", "Add cards"))
-        self.qst_label.setText(_translate("add_cards_win", "Question:"))
-        self.ans_label.setText(_translate("add_cards_win", "Answer:"))
-        self.add_card_btn.setText(_translate("add_cards_win", "Add"))
+        self.add_cards_win.setWindowTitle("Add cards")
+        self.qst_label.setText("Question:")
+        self.ans_label.setText("Answer:")
+        self.add_card_btn.setText("Add")
         self.add_cards_win.show()
 
         self.add_cards_win.setWindowIcon(QtGui.QIcon("feather\\plus-square.svg"))
@@ -2104,7 +2059,6 @@ class Ui_main_win(object):
             cards_text.close()
 
             cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-            total_cards = cards_text.read().count("DECK^^$=")
             cards_text.close()
 
     def cancel_card_btn_clicked(self):
@@ -2125,17 +2079,15 @@ class Ui_main_win(object):
         self.del_deck_btn.deleteLater()
         self.add_cards_btn.deleteLater()
 
-        ######################################### Re-draws main_win ###################################################
+        # Re-draws main_win.
         # Finds how many are due today.
         cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
         cards_parts = re.split("DUE\^\^\$=|INTERVAL\^\^\$=", cards_text.read())
         cards_text.close()
         cards_parts.pop(0)
         num_to_study = 0
-        # Removes those not due today.
-        end_of_today = str(datetime.datetime.now())
-        end_of_today = datetime.datetime(int(end_of_today[:4]), int(end_of_today[5:7]), int(end_of_today[8:10]), 23, 59,
-                                         59, 999999)
+        today = str(datetime.datetime.now())
+        end_of_today = datetime.datetime(int(today[:4]), int(today[5:7]), int(today[8:10]), 23, 59, 59, 999999)
         for idx, part in enumerate(cards_parts):
             if idx % 2 == 0 and datetime.datetime.strptime(part, "%Y-%m-%d %H:%M:%S.%f") <= end_of_today:
                 num_to_study += 1
@@ -2279,10 +2231,7 @@ class Ui_main_win(object):
         self.main_win_scrollArea.raise_()
         self.main_win.setCentralWidget(self.main_win_centralwidget)
 
-        QtCore.QMetaObject.connectSlotsByName(self.main_win)
-
-        _translate = QtCore.QCoreApplication.translate
-        self.main_win.setWindowTitle(_translate("main_win", "Memory Gain"))
+        self.main_win.setWindowTitle("Memory Gain")
         self.main_win.setWindowIcon(QtGui.QIcon("feather\\layers.svg"))
 
     def create_deck_btn_clicked(self):
@@ -2410,13 +2359,10 @@ class Ui_main_win(object):
         spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.create_deck_gridLayout.addItem(spacerItem3, 1, 0, 1, 1)
 
-        QtCore.QMetaObject.connectSlotsByName(self.create_deck_win)
-
-        _translate = QtCore.QCoreApplication.translate
-        self.create_deck_win.setWindowTitle(_translate("create_deck_win", "Create deck"))
-        self.create_prompt_label.setText(_translate("create_deck_win", "Deck:"))
-        self.create_ok_btn.setText(_translate("create_deck_win", "Ok"))
-        self.create_cancel_btn.setText(_translate("create_deck_win", "Cancel"))
+        self.create_deck_win.setWindowTitle("Create deck")
+        self.create_prompt_label.setText("Deck:")
+        self.create_ok_btn.setText("Ok")
+        self.create_cancel_btn.setText("Cancel")
 
         self.create_deck_win.setWindowIcon(QtGui.QIcon("feather\\plus.svg"))
 
@@ -2464,6 +2410,8 @@ class Ui_main_win(object):
             decks_text.write(self.create_input_text.text().strip() + "\n")
             decks_text.close()
 
+            # Writes the decks in alphabetical order so the deck buttons will also be in order and have their index.
+            # macth to the corresponding line in decks.txt.
             decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
             decks_sorted = decks_text.readlines()
             decks_sorted.sort(key=str.lower)
@@ -2532,8 +2480,6 @@ class Ui_main_win(object):
             self.main_win_verticalLayout.addItem(main_win_spacer2)
             self.main_win_scrollArea.setWidget(self.main_win_scrollAreaWidgetContents)
             self.main_win_gridLayout.addWidget(self.main_win_scrollArea, 3, 1, 1, 1)
-            self.create_deck_btn.raise_()
-            self.main_win_scrollArea.raise_()
             self.main_win.setCentralWidget(self.main_win_centralwidget)
 
             self.create_deck_win.close()
