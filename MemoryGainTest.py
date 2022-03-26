@@ -238,7 +238,7 @@ class Ui_main_win(object):
         self.main_win.setCentralWidget(self.main_win_centralwidget)
 
         self.main_win.setWindowTitle("Memory Gain")
-        self.main_win.setWindowIcon(QtGui.QIcon("feather\\layers.svg"))
+        self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
 
         self.main_win.show()
 
@@ -1291,7 +1291,7 @@ class Ui_main_win(object):
         self.del_deck_btn.setText("Delete")
         self.back_decks_btn.setText("Home")
 
-        self.main_win.setWindowIcon(QtGui.QIcon("feather\\layers.svg"))
+        self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
 
     def del_deck_btn_clicked(self, deck):
         self.msg = QtWidgets.QMessageBox()
@@ -1504,7 +1504,7 @@ class Ui_main_win(object):
             self.main_win.setCentralWidget(self.main_win_centralwidget)
 
             self.main_win.setWindowTitle("Memory Gain")
-            self.main_win.setWindowIcon(QtGui.QIcon("feather\\layers.svg"))
+            self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
 
     def search_deck_btn_clicked(self, deck):
         self.search_win = QtWidgets.QWidget()
@@ -1579,7 +1579,7 @@ class Ui_main_win(object):
         self.search_win_verticalLayout.addLayout(self.search_win_horizontalLayout_2)
         self.search_win_gridLayout.addLayout(self.search_win_verticalLayout, 1, 1, 1, 1)
 
-        self.search_win.setWindowIcon(QtGui.QIcon("feather\\search.svg"))
+        self.search_win.setWindowIcon(QtGui.QIcon("feather_601060\\search.svg"))
 
         self.search_win.show()
         self.showing = False
@@ -2017,7 +2017,7 @@ class Ui_main_win(object):
         self.add_card_btn.setText("Add")
         self.add_cards_win.show()
 
-        self.add_cards_win.setWindowIcon(QtGui.QIcon("feather\\plus-square.svg"))
+        self.add_cards_win.setWindowIcon(QtGui.QIcon("feather_601060\\plus-square.svg"))
 
     def add_card_btn_clicked(self, deck):
         cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
@@ -2232,7 +2232,7 @@ class Ui_main_win(object):
         self.main_win.setCentralWidget(self.main_win_centralwidget)
 
         self.main_win.setWindowTitle("Memory Gain")
-        self.main_win.setWindowIcon(QtGui.QIcon("feather\\layers.svg"))
+        self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
 
     def create_deck_btn_clicked(self):
         Thread(target=self.create_deck_btn_clicked_window()).start()
@@ -2364,7 +2364,7 @@ class Ui_main_win(object):
         self.create_ok_btn.setText("Ok")
         self.create_cancel_btn.setText("Cancel")
 
-        self.create_deck_win.setWindowIcon(QtGui.QIcon("feather\\plus.svg"))
+        self.create_deck_win.setWindowIcon(QtGui.QIcon("feather_601060\\plus.svg"))
 
         self.create_deck_win.show()
 
