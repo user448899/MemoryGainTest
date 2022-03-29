@@ -53,7 +53,7 @@ class Ui_main_win(object):
         going_to_update = False
         try:
             html = urllib.request.urlopen("https://memorygain.app")
-            if "Test version 0.0.2" not in str(html.read()):
+            if "Test version 0.0.3" not in str(html.read()):
                 self.update_msg = QtWidgets.QMessageBox()
                 self.update_msg.setWindowTitle("Update")
                 self.update_msg.setText(
@@ -1304,6 +1304,13 @@ class Ui_main_win(object):
 
     def del_deck_msg_clicked(self, btn, deck):
         if btn.text() == "OK":
+            # Deletes add cards and search window.
+            self.add_cards_win = QtWidgets.QWidget()
+            self.add_cards_win.deleteLater()
+
+            self.search_win = QtWidgets.QWidget()
+            self.search_win.deleteLater()
+
             decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
             decks_lines = decks_text.readlines()
             index = decks_lines.index(deck + "\n")
