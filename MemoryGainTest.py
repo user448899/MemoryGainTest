@@ -836,7 +836,7 @@ class Ui_main_win(object):
         font.setPointSize(12)
         decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
         decks_lines = decks_text.readlines()
-        for idx, i in enumerate(decks_lines):
+        for idx, deck in enumerate(decks_lines):
             self.deck_btn = QtWidgets.QPushButton(self.main_win_scrollAreaWidgetContents)
             self.deck_btn.setMinimumSize(QtCore.QSize(282, 40))
             self.deck_btn.setMaximumSize(QtCore.QSize(282, 40))
@@ -856,7 +856,7 @@ class Ui_main_win(object):
                                                 }
                                                 """)
             self.deck_btn.setObjectName("deck_btn")
-            self.deck_btn.setText("  " + i.replace("\n", ""))
+            self.deck_btn.setText("  " + deck.replace("\n", ""))
             self.main_win_verticalLayout.addWidget(self.deck_btn)
             if idx == 0:
                 self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(0))
@@ -1456,7 +1456,7 @@ class Ui_main_win(object):
             font.setPointSize(12)
             decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
             decks_lines = decks_text.readlines()
-            for idx, i in enumerate(decks_lines):
+            for idx, deck in enumerate(decks_lines):
                 self.deck_btn = QtWidgets.QPushButton(self.main_win_scrollAreaWidgetContents)
                 self.deck_btn.setMinimumSize(QtCore.QSize(282, 40))
                 self.deck_btn.setMaximumSize(QtCore.QSize(282, 40))
@@ -1476,7 +1476,7 @@ class Ui_main_win(object):
                                                                     }
                                                                     """)
                 self.deck_btn.setObjectName("deck_btn")
-                self.deck_btn.setText("  " + i.replace("\n", ""))
+                self.deck_btn.setText("  " + deck.replace("\n", ""))
                 self.main_win_verticalLayout.addWidget(self.deck_btn)
                 if idx == 0:
                     self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(0))
@@ -2185,7 +2185,7 @@ class Ui_main_win(object):
         font.setPointSize(12)
         decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
         decks_lines = decks_text.readlines()
-        for idx, i in enumerate(decks_lines):
+        for idx, deck in enumerate(decks_lines):
             self.deck_btn = QtWidgets.QPushButton(self.main_win_scrollAreaWidgetContents)
             self.deck_btn.setMinimumSize(QtCore.QSize(282, 40))
             self.deck_btn.setMaximumSize(QtCore.QSize(282, 40))
@@ -2205,7 +2205,7 @@ class Ui_main_win(object):
                                                         }
                                                         """)
             self.deck_btn.setObjectName("deck_btn")
-            self.deck_btn.setText("  " + i.replace("\n", ""))
+            self.deck_btn.setText("  " + deck.replace("\n", ""))
             self.main_win_verticalLayout.addWidget(self.deck_btn)
             if idx == 0:
                 self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(0))
@@ -2437,7 +2437,7 @@ class Ui_main_win(object):
             font.setPointSize(12)
             decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
             decks_lines = decks_text.readlines()
-            for idx, i in enumerate(decks_lines):
+            for idx, deck in enumerate(decks_lines):
                 self.deck_btn = QtWidgets.QPushButton(self.main_win_scrollAreaWidgetContents)
                 self.deck_btn.setMinimumSize(QtCore.QSize(282, 40))
                 self.deck_btn.setMaximumSize(QtCore.QSize(282, 40))
@@ -2456,7 +2456,7 @@ class Ui_main_win(object):
                                             }""")
                 self.deck_btn.setObjectName("deck_btn")
 
-                self.deck_btn.setText("  " + i.replace("\n", ""))
+                self.deck_btn.setText("  " + deck.replace("\n", ""))
                 self.main_win_verticalLayout.addWidget(self.deck_btn)
                 if idx == 0:
                     self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(0))
