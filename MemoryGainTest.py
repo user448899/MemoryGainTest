@@ -2350,14 +2350,6 @@ class Ui_main_win(object):
             msg.setIcon(QtWidgets.QMessageBox.Warning)
             msg.setText("That deck already exists.")
             msg.exec_()
-        elif len(decks_lines) > 9:
-            msg = QtWidgets.QMessageBox()
-            msg.setWindowTitle("Limit")
-            center = QDesktopWidget().availableGeometry().center()
-            msg.move(center)
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText("This version of the Memory Gain application supports a maximum of 10 decks.")
-            msg.exec_()
         else:
             decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "a")
             decks_text.write(self.create_input_text.text().strip() + "\n")
