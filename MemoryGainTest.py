@@ -1,6 +1,5 @@
 """
-Joshua Chick. Memory Gain is a flashcards app.
-Copyright (C) 2022 Joshua Chick
+Joshua Chick. Memory Gain (c) is a flashcards app.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
