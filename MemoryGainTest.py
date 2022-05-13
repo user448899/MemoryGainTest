@@ -26,6 +26,7 @@ import re
 import tempfile
 import urllib.request
 import os
+from functools import  partial
 
 
 class Ui_main_win(object):
@@ -207,26 +208,12 @@ class Ui_main_win(object):
             self.deck_btn.setObjectName("deck_btn")
             self.deck_btn.setText("  " + deck.replace("\n", ""))
             self.main_win_verticalLayout.addWidget(self.deck_btn)
-            if idx == 0:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(0))
-            if idx == 1:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(1))
-            if idx == 2:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(2))
-            if idx == 3:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(3))
-            if idx == 4:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(4))
-            if idx == 5:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(5))
-            if idx == 6:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(6))
-            if idx == 7:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(7))
-            if idx == 8:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(8))
-            if idx == 9:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(9))
+
+            # This has to be done as the deck button cannot be assigned the 'idx' variable directly as this will make it
+            # such that the argument of all buttons will be the last value of 'idx', i.e. if you write
+            # 'self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(idx))' all buttons will have the final value of 'idx'.
+            func = partial(self.deck_btn_clicked, idx)
+            self.deck_btn.clicked.connect(func)
 
         decks_text.close()
 
@@ -858,26 +845,12 @@ class Ui_main_win(object):
             self.deck_btn.setObjectName("deck_btn")
             self.deck_btn.setText("  " + deck.replace("\n", ""))
             self.main_win_verticalLayout.addWidget(self.deck_btn)
-            if idx == 0:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(0))
-            if idx == 1:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(1))
-            if idx == 2:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(2))
-            if idx == 3:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(3))
-            if idx == 4:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(4))
-            if idx == 5:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(5))
-            if idx == 6:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(6))
-            if idx == 7:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(7))
-            if idx == 8:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(8))
-            if idx == 9:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(9))
+
+            # This has to be done as the deck button cannot be assigned the 'idx' variable directly as this will make it
+            # such that the argument of all buttons will be the last value of 'idx', i.e. if you write
+            # 'self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(idx))' all buttons will have the final value of 'idx'.
+            func = partial(self.deck_btn_clicked, idx)
+            self.deck_btn.clicked.connect(func)
 
         decks_text.close()
 
@@ -1478,26 +1451,13 @@ class Ui_main_win(object):
                 self.deck_btn.setObjectName("deck_btn")
                 self.deck_btn.setText("  " + deck.replace("\n", ""))
                 self.main_win_verticalLayout.addWidget(self.deck_btn)
-                if idx == 0:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(0))
-                if idx == 1:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(1))
-                if idx == 2:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(2))
-                if idx == 3:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(3))
-                if idx == 4:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(4))
-                if idx == 5:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(5))
-                if idx == 6:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(6))
-                if idx == 7:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(7))
-                if idx == 8:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(8))
-                if idx == 9:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(9))
+
+                # This has to be done as the deck button cannot be assigned the 'idx' variable directly as this will make it
+                # such that the argument of all buttons will be the last value of 'idx', i.e. if you write
+                # 'self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(idx))' all buttons will have the final value of 'idx'.
+                func = partial(self.deck_btn_clicked, idx)
+                self.deck_btn.clicked.connect(func)
+
             decks_text.close()
 
             main_win_spacer2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum,
@@ -2207,26 +2167,13 @@ class Ui_main_win(object):
             self.deck_btn.setObjectName("deck_btn")
             self.deck_btn.setText("  " + deck.replace("\n", ""))
             self.main_win_verticalLayout.addWidget(self.deck_btn)
-            if idx == 0:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(0))
-            if idx == 1:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(1))
-            if idx == 2:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(2))
-            if idx == 3:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(3))
-            if idx == 4:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(4))
-            if idx == 5:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(5))
-            if idx == 6:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(6))
-            if idx == 7:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(7))
-            if idx == 8:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(8))
-            if idx == 9:
-                self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(9))
+
+            # This has to be done as the deck button cannot be assigned the 'idx' variable directly as this will make it
+            # such that the argument of all buttons will be the last value of 'idx', i.e. if you write
+            # 'self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(idx))' all buttons will have the final value of 'idx'.
+            func = partial(self.deck_btn_clicked, idx)
+            self.deck_btn.clicked.connect(func)
+
         decks_text.close()
 
         main_win_spacer2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -2458,26 +2405,12 @@ class Ui_main_win(object):
 
                 self.deck_btn.setText("  " + deck.replace("\n", ""))
                 self.main_win_verticalLayout.addWidget(self.deck_btn)
-                if idx == 0:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(0))
-                if idx == 1:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(1))
-                if idx == 2:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(2))
-                if idx == 3:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(3))
-                if idx == 4:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(4))
-                if idx == 5:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(5))
-                if idx == 6:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(6))
-                if idx == 7:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(7))
-                if idx == 8:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(8))
-                if idx == 9:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(9))
+
+                # This has to be done as the deck button cannot be assigned the 'idx' variable directly as this will make it
+                # such that the argument of all buttons will be the last value of 'idx', i.e. if you write
+                # 'self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(idx))' all buttons will have the final value of 'idx'.
+                func = partial(self.deck_btn_clicked, idx)
+                self.deck_btn.clicked.connect(func)
 
             decks_text.close()
 
