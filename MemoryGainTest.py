@@ -26,7 +26,7 @@ import re
 import tempfile
 import urllib.request
 import os
-from functools import  partial
+from functools import partial
 
 
 class Ui_main_win(object):
