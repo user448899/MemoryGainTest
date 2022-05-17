@@ -29,7 +29,7 @@ import os
 from functools import partial
 
 
-class Ui_main_win(object):
+class MainWin:
     def __init__(self):
         self.temp_path = tempfile.gettempdir()
 
@@ -2420,7 +2420,7 @@ class Ui_main_win(object):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    ui = Ui_main_win()
-    ui.setupUi()
+    main_win = MainWin()
+    main_win.setupUi()
     sys.exit(app.exec_())
 
