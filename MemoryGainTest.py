@@ -30,7 +30,6 @@ from functools import partial
 
 
 class Ui_main_win(object):
-
     def __init__(self):
         self.temp_path = tempfile.gettempdir()
 
@@ -1072,7 +1071,7 @@ class Ui_main_win(object):
                     if len(l_b_g_B_list) != 0:
                         self.got_card = l_b_g_B_list[0]
                     else:
-                        # "L" in order. This is  OR "l", or "b"s due in 30 sec and no "g", or "B"s due in 3 min.
+                        # "L" in order. This is for "l", and/or "b"s due in 30 sec and no "g", or "B"s due in 3 min.
                         L_list = []
                         for card in cards:
                             if card[6] == "L":
