@@ -1472,411 +1472,9 @@ class MainWin:
             self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
 
     def search_deck_btn_clicked(self, deck):
-        self.search_win = QtWidgets.QWidget()
-        self.search_win.setWindowTitle(f"Search {deck}")
-        self.search_win.setObjectName("search_win")
-        self.search_win.resize(700, 500)
-        self.search_win.setStyleSheet("""
-                                        QWidget#search_win{
-                                            background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(40, 10, 40, 255), stop:1 rgba(20, 0, 20, 255));
-                                        }
-                                        QScrollBar{
-                                            background: transparent;
-                                            width: 10px;
-                                        }
-                                        """)
-        self.search_win_gridLayout = QtWidgets.QGridLayout(self.search_win)
-        self.search_win_gridLayout.setObjectName("search_win_gridLayout")
-        self.search_win_verticalLayout = QtWidgets.QVBoxLayout()
-        self.search_win_verticalLayout.setObjectName("search_win_verticalLayout")
-        self.search_win_horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.search_win_horizontalLayout_2.setObjectName("search_win_horizontalLayout_2")
-
-        self.input_search = QtWidgets.QLineEdit(self.search_win)
-        self.input_search.setMinimumSize(QtCore.QSize(400, 40))
-        self.input_search.setMaximumSize(QtCore.QSize(16777215, 40))
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.input_search.setFont(font)
-        self.input_search.setObjectName("input_search")
-        self.input_search.setStyleSheet("""
-                                        QLineEdit#input_search{
-                                            background-color: rgba(255, 255, 255, 0.1);
-                                            border-radius: 15px;
-                                            padding-left: 5px;
-                                            padding-right: 5px;
-                                            color: white;
-                                        }
-                                        """)
-        self.search_win_horizontalLayout_2.addWidget(self.input_search)
-
-        self.search_btn = QtWidgets.QPushButton(self.search_win)
-        self.search_btn.setMinimumSize(QtCore.QSize(150, 40))
-        self.search_btn.setMaximumSize(QtCore.QSize(150, 40))
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.search_btn.setFont(font)
-        self.search_btn.setStyleSheet("""
-                                    QPushButton#search_btn{
-                                        background-color: transparent;
-                                        text-align: left;
-                                        color: white;
-                                        border-radius: 15px;
-                                        border: 1px solid white;
-                                        text-align: center;
-                                    }
-                                    QPushButton#search_btn:hover{
-                                        background-color: rgba(255, 255, 255, 0.1);
-                                    }
-                                    QPushButton#search_btn:pressed{
-                                        background-color: rgba(255, 255, 255, 0.2);
-                                    }
-                                    """)
-        self.search_btn.setObjectName("search_btn")
-        self.search_win_horizontalLayout_2.addWidget(self.search_btn)
-        self.search_btn.clicked.connect(lambda: self.search_btn_clicked(deck))
-        self.search_win_verticalLayout.addLayout(self.search_win_horizontalLayout_2)
-        self.search_btn.setText("Search")
-
-        self.search_win_horizontalLayout = QtWidgets.QHBoxLayout()
-        self.search_win_horizontalLayout.setObjectName("search_win_horizontalLayout")
-
-        self.search_win_verticalLayout.addLayout(self.search_win_horizontalLayout_2)
-        self.search_win_gridLayout.addLayout(self.search_win_verticalLayout, 1, 1, 1, 1)
-
-        self.search_win.setWindowIcon(QtGui.QIcon("feather_601060\\search.svg"))
-
+        self.search_win = SearchWin(deck)
         self.search_win.show()
-        self.showing = False
-
-    def search_btn_clicked(self, deck):
-        self.search_query = self.input_search.text()
-        self.search_page = 1
-        self.search_upto = 0
-
-        # Check query exists.
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        cards = re.split("QUESTION\^\^\$=|ANSWER\^\^\$=|EASE\^\^\$=", cards_text.read())
-        cards.pop(0)
-        is_in = False
-        for i in range(len(cards)):
-            if i % 3 == 0 or i % 3 == 1:
-                if self.search_query in cards[i]:
-                    is_in = True
-        cards_text.close()
-
-        if is_in:
-            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-            self.search_card_idxs = []
-            cards = cards_text.read().split("DECK^^$=")
-            cards.pop(0)
-            cards_deck_and_rest = []
-            for i in range(len(cards)):
-                cards_deck_and_rest.append(cards[i][:cards[i].index("QUESTION^^$=")])
-                cards_deck_and_rest.append(cards[i][cards[i].index("QUESTION^^$="):])
-            for i in range(len(cards)):
-                if deck == cards_deck_and_rest[i*2]:
-                    qst_onwards = cards_deck_and_rest[i*2 + 1].split("QUESTION^^$=")
-                    qst = qst_onwards[1].split("ANSWER^^$=")[0]
-                    ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
-                    if self.search_query in qst or self.search_query in ans:
-                        self.search_card_idxs.append(i)
-
-            if len(self.search_card_idxs) != 0:
-                qst_onwards = cards[self.search_card_idxs[self.search_upto]].split("QUESTION^^$=")
-                qst = qst_onwards[1].split("ANSWER^^$=")[0]
-                ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
-
-            cards_text.close()
-
-            if (not self.showing) and (len(self.search_card_idxs) != 0):
-                self.search_qst_label = QtWidgets.QLabel(self.search_win)
-                self.search_qst_label.setMinimumSize(QtCore.QSize(140, 25))
-                self.search_qst_label.setMaximumSize(QtCore.QSize(140, 25))
-                font = QtGui.QFont("Verdana")
-                font.setPointSize(12)
-                self.search_qst_label.setFont(font)
-                self.search_qst_label.setStyleSheet("color:white;\n"
-                                                    "border:none;")
-                self.search_qst_label.setObjectName("search_qst_label")
-                self.search_win_verticalLayout.addWidget(self.search_qst_label)
-                self.search_qst_label.setText("Question:")
-
-                self.search_qst_text = QtWidgets.QTextEdit(self.search_win)
-                font = QtGui.QFont("Verdana")
-                font.setPointSize(12)
-                self.search_qst_text.setFont(font)
-                self.search_qst_text.setStyleSheet("""
-                                                    background-color: rgba(255, 255, 255, 0.1);
-                                                    border-radius:15px;
-                                                    padding:5px;
-                                                    color: white;
-                                                    """)
-                self.search_qst_text.setObjectName("search_qst_text")
-                self.search_win_verticalLayout.addWidget(self.search_qst_text)
-
-                self.search_ans_label = QtWidgets.QLabel(self.search_win)
-                self.search_ans_label.setMinimumSize(QtCore.QSize(140, 25))
-                self.search_ans_label.setMaximumSize(QtCore.QSize(140, 25))
-                font = QtGui.QFont("Verdana")
-                font.setPointSize(12)
-                self.search_ans_label.setFont(font)
-                self.search_ans_label.setStyleSheet("color:white;\n"
-                                                    "border:none;")
-                self.search_ans_label.setObjectName("search_ans_label")
-                self.search_win_verticalLayout.addWidget(self.search_ans_label)
-                self.search_ans_label.setText("Answer:")
-
-                self.search_ans_text = QtWidgets.QTextEdit(self.search_win)
-                font = QtGui.QFont("Verdana")
-                font.setPointSize(12)
-                self.search_ans_text.setFont(font)
-                self.search_ans_text.setStyleSheet("""
-                                                   background-color: rgba(255, 255, 255, 0.1);
-                                                   border-radius:15px;
-                                                   padding:5px;
-                                                   color: white;
-                                                   """)
-                self.search_ans_text.setObjectName("search_ans_text")
-                self.search_win_verticalLayout.addWidget(self.search_ans_text)
-
-                self.search_save_btn = QtWidgets.QPushButton(self.search_win)
-                self.search_save_btn.setMinimumSize(QtCore.QSize(200, 40))
-                self.search_save_btn.setMaximumSize(QtCore.QSize(200, 40))
-                font = QtGui.QFont("Verdana")
-                font.setPointSize(12)
-                self.search_save_btn.setFont(font)
-                self.search_save_btn.setStyleSheet("""
-                                                    QPushButton#search_save_btn{
-                                                        background-color: transparent;
-                                                        text-align: left;
-                                                        color: white;
-                                                        border-radius: 15px;
-                                                        border: 1px solid white;
-                                                        text-align: center;
-                                                    }
-                                                    QPushButton#search_save_btn:hover{
-                                                        background-color: rgba(255, 255, 255, 0.1);
-                                                    }
-                                                    QPushButton#search_save_btn:pressed{
-                                                        background-color: rgba(255, 255, 255, 0.2);
-                                                    }
-                                                    """)
-                self.search_save_btn.setObjectName("search_save_btn")
-                self.search_win_horizontalLayout.addWidget(self.search_save_btn)
-                self.search_save_btn.setText("Save")
-                self.search_save_btn.clicked.connect(lambda: self.search_save_btn_clicked())
-
-                self.search_del_btn = QtWidgets.QPushButton(self.search_win)
-                self.search_del_btn.setMinimumSize(QtCore.QSize(200, 40))
-                self.search_del_btn.setMaximumSize(QtCore.QSize(200, 40))
-                font = QtGui.QFont("Verdana")
-                font.setPointSize(12)
-                self.search_del_btn.setFont(font)
-                self.search_del_btn.setStyleSheet("""
-                                                QPushButton#search_del_btn{
-                                                    background-color: transparent;
-                                                    text-align: left;
-                                                    color: white;
-                                                    border-radius: 15px;
-                                                    border: 1px solid white;
-                                                    text-align: center;
-                                                }
-                                                QPushButton#search_del_btn:hover{
-                                                    background-color: rgba(255, 255, 255, 0.1);
-                                                }
-                                                QPushButton#search_del_btn:pressed{
-                                                    background-color: rgba(255, 255, 255, 0.2);
-                                                }
-                                                """)
-                self.search_del_btn.setObjectName("search_del_btn")
-                self.search_win_horizontalLayout.addWidget(self.search_del_btn)
-                self.search_del_btn.setText("Delete")
-                self.search_del_btn.clicked.connect(lambda: self.search_del_btn_clicked(deck))
-
-                spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-                self.search_win_horizontalLayout.addItem(spacerItem1)
-
-                self.search_left_btn = QtWidgets.QPushButton(self.search_win)
-                self.search_left_btn.setMinimumSize(QtCore.QSize(70, 40))
-                self.search_left_btn.setMaximumSize(QtCore.QSize(70, 40))
-                font = QtGui.QFont("Verdana")
-                font.setPointSize(12)
-                self.search_left_btn.setFont(font)
-                self.search_left_btn.setStyleSheet("""
-                                                QPushButton#search_left_btn{
-                                                    background-color: transparent;
-                                                    text-align: left;
-                                                    color: white;
-                                                    border-radius: 15px;
-                                                    border: 1px solid white;
-                                                    text-align: center;
-                                                }
-                                                QPushButton#search_left_btn:hover{
-                                                    background-color: rgba(255, 255, 255, 0.1);
-                                                }
-                                                QPushButton#search_left_btn:pressed{
-                                                    background-color: rgba(255, 255, 255, 0.2);
-                                                }
-                                                """)
-                self.search_left_btn.setText("")
-                icon3 = QtGui.QIcon()
-                icon3.addPixmap(QtGui.QPixmap("feather_white\\chevron-left.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-                self.search_left_btn.setIcon(icon3)
-                self.search_left_btn.setIconSize(QtCore.QSize(22, 22))
-                self.search_left_btn.setObjectName("search_left_btn")
-                self.search_win_horizontalLayout.addWidget(self.search_left_btn)
-                self.search_left_btn.clicked.connect(lambda: self.search_left_btn_clicked())
-
-                self.card_of_card_label = QtWidgets.QLabel(self.search_win)
-                self.card_of_card_label.setMinimumSize(QtCore.QSize(100, 40))
-                self.card_of_card_label.setMaximumSize(QtCore.QSize(100, 40))
-                font = QtGui.QFont("Verdana")
-                font.setPointSize(12)
-                self.card_of_card_label.setFont(font)
-                self.card_of_card_label.setStyleSheet("color:white;\n"
-                                                      "border:none;")
-                self.card_of_card_label.setAlignment(QtCore.Qt.AlignCenter)
-                self.card_of_card_label.setObjectName("card_of_card_label")
-                self.search_win_horizontalLayout.addWidget(self.card_of_card_label)
-
-                self.search_right_btn = QtWidgets.QPushButton(self.search_win)
-                self.search_right_btn.setMinimumSize(QtCore.QSize(70, 40))
-                self.search_right_btn.setMaximumSize(QtCore.QSize(70, 40))
-                font = QtGui.QFont("Verdana")
-                font.setPointSize(12)
-                self.search_right_btn.setFont(font)
-                self.search_right_btn.setStyleSheet("""
-                                                    QPushButton#search_right_btn{
-                                                        background-color: transparent;
-                                                        text-align: left;
-                                                        color: white;
-                                                        border-radius: 15px;
-                                                        border: 1px solid white;
-                                                        text-align: center;
-                                                    }
-                                                    QPushButton#search_right_btn:hover{
-                                                        background-color: rgba(255, 255, 255, 0.1);
-                                                    }
-                                                    QPushButton#search_right_btn:pressed{
-                                                        background-color: rgba(255, 255, 255, 0.2);
-                                                    }
-                                                    """)
-                self.search_right_btn.setText("")
-                icon4 = QtGui.QIcon()
-                icon4.addPixmap(QtGui.QPixmap("feather_white\\chevron-right.svg"),
-                                QtGui.QIcon.Normal, QtGui.QIcon.Off)
-                self.search_right_btn.setIcon(icon4)
-                self.search_right_btn.setIconSize(QtCore.QSize(22, 22))
-                self.search_right_btn.setObjectName("search_right_btn")
-                self.search_win_horizontalLayout.addWidget(self.search_right_btn)
-                self.search_right_btn.clicked.connect(lambda: self.search_right_btn_clicked())
-
-                self.search_win_verticalLayout.addLayout(self.search_win_horizontalLayout)
-                self.search_win_gridLayout.addLayout(self.search_win_verticalLayout, 1, 1, 1, 1)
-                self.showing = True
-
-                self.search_qst_text.setText(qst)
-                self.search_ans_text.setText(ans)
-                self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
-
-            elif len(self.search_card_idxs) != 0:
-                self.search_qst_text.setText(qst)
-                self.search_ans_text.setText(ans)
-                self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
-
-            else:
-                msg = QtWidgets.QMessageBox()
-                msg.setWindowTitle("Not found")
-                center = QDesktopWidget().availableGeometry().center()
-                msg.move(center)
-                msg.setIcon(QtWidgets.QMessageBox.Information)
-                msg.setText("No card with that text was found.")
-                msg.exec_()
-
-        else:
-            msg = QtWidgets.QMessageBox()
-            msg.setWindowTitle("Not found")
-            center = QDesktopWidget().availableGeometry().center()
-            msg.move(center)
-            msg.setIcon(QtWidgets.QMessageBox.Information)
-            msg.setText("No card with that text was found.")
-            msg.exec_()
-
-    def search_save_btn_clicked(self):
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        num_of_cards = len(cards_text.read().split("DECK^^$=")) - 1
-        cards_text.seek(0)
-        cards_parts = re.split("DECK\^\^\$=|QUESTION\^\^\$=|ANSWER\^\^\$=|EASE\^\^\$=", cards_text.read())
-        cards_parts.pop(0)
-        # Math is relevant to the splitting.
-        qst_idx = self.search_card_idxs[self.search_upto] * 4 + 1
-        cards_parts[qst_idx] = self.search_qst_text.toPlainText().strip()
-        cards_parts[qst_idx + 1] = self.search_ans_text.toPlainText().strip()
-        cards_text.close()
-
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "w")
-        cards_parts_f = []
-        for i in range(num_of_cards):
-            n = i * 4
-            cards_parts_f.append(f"DECK^^$={cards_parts[n]}QUESTION^^$={cards_parts[n + 1]}ANSWER^^$={cards_parts[n + 2]}EASE^^$={cards_parts[n + 3]}")
-        cards_text.writelines(cards_parts_f)
-        cards_text.close()
-
-    def search_del_btn_clicked(self, deck):
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        cards = cards_text.read().split("DECK^^$=")
-        cards.pop(0)
-        cards.pop(self.search_card_idxs[self.search_upto])
-        cards_text.close()
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "w")
-        for idx, i in enumerate(cards):
-            cards[idx] = "DECK^^$=" + i
-        cards_text.writelines(cards)
-        cards_text.close()
-        if len(self.search_card_idxs) == 1:
-            self.search_win.close()
-        else:
-            self.search_btn_clicked(deck)
-
-    def search_right_btn_clicked(self):
-        if self.search_page != len(self.search_card_idxs):
-            self.search_page += 1
-            self.search_upto += 1
-
-            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-            cards = cards_text.read().split("DECK^^$=")
-            cards.pop(0)
-
-            qst_onwards = cards[self.search_card_idxs[self.search_upto]].split("QUESTION^^$=")
-            qst = qst_onwards[1].split("ANSWER^^$=")[0]
-            ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
-
-            self.search_qst_text.setText(qst)
-            self.search_ans_text.setText(ans)
-            self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
-
-            cards_text.close()
-
-    def search_left_btn_clicked(self):
-        if self.search_page != 1:
-            self.search_page -= 1
-            self.search_upto -= 1
-
-            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-            cards = cards_text.read().split("DECK^^$=")
-            cards.pop(0)
-
-            qst_onwards = cards[self.search_card_idxs[self.search_upto]].split("QUESTION^^$=")
-            qst = qst_onwards[1].split("ANSWER^^$=")[0]
-            ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
-
-            self.search_qst_text.setText(qst)
-            self.search_ans_text.setText(ans)
-            self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
-
-            cards_text.close()
-
+        
     def add_cards_btn_clicked(self, deck):
         self.add_cards_win = QtWidgets.QWidget()
         self.add_cards_win.setObjectName("add_cards_win")
@@ -2416,6 +2014,416 @@ class MainWin:
 
     def create_cancel_btn_clicked(self):
         self.create_deck_win.close()
+
+
+class SearchWin(QtWidgets.QWidget):
+    def __init__(self, deck):
+        super().__init__()
+        self.deck = deck
+        self.temp_path = tempfile.gettempdir()
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.setWindowTitle(f"Search {self.deck}")
+        self.setObjectName("search_win")
+        self.resize(700, 500)
+        self.setStyleSheet("""
+                            QWidget#search_win{
+                                background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(40, 10, 40, 255), stop:1 rgba(20, 0, 20, 255));
+                            }
+                            QScrollBar{
+                                background: transparent;
+                                width: 10px;
+                            }
+                            """)
+        self.search_win_gridLayout = QtWidgets.QGridLayout(self)
+        self.search_win_gridLayout.setObjectName("search_win_gridLayout")
+        self.search_win_verticalLayout = QtWidgets.QVBoxLayout()
+        self.search_win_verticalLayout.setObjectName("search_win_verticalLayout")
+        self.search_win_horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.search_win_horizontalLayout_2.setObjectName("search_win_horizontalLayout_2")
+
+        self.input_search = QtWidgets.QLineEdit(self)
+        self.input_search.setMinimumSize(QtCore.QSize(400, 40))
+        self.input_search.setMaximumSize(QtCore.QSize(16777215, 40))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.input_search.setFont(font)
+        self.input_search.setObjectName("input_search")
+        self.input_search.setStyleSheet("""
+                                                QLineEdit#input_search{
+                                                    background-color: rgba(255, 255, 255, 0.1);
+                                                    border-radius: 15px;
+                                                    padding-left: 5px;
+                                                    padding-right: 5px;
+                                                    color: white;
+                                                }
+                                                """)
+        self.search_win_horizontalLayout_2.addWidget(self.input_search)
+
+        self.search_btn = QtWidgets.QPushButton(self)
+        self.search_btn.setMinimumSize(QtCore.QSize(150, 40))
+        self.search_btn.setMaximumSize(QtCore.QSize(150, 40))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.search_btn.setFont(font)
+        self.search_btn.setStyleSheet("""
+                                            QPushButton#search_btn{
+                                                background-color: transparent;
+                                                text-align: left;
+                                                color: white;
+                                                border-radius: 15px;
+                                                border: 1px solid white;
+                                                text-align: center;
+                                            }
+                                            QPushButton#search_btn:hover{
+                                                background-color: rgba(255, 255, 255, 0.1);
+                                            }
+                                            QPushButton#search_btn:pressed{
+                                                background-color: rgba(255, 255, 255, 0.2);
+                                            }
+                                            """)
+        self.search_btn.setObjectName("search_btn")
+        self.search_win_horizontalLayout_2.addWidget(self.search_btn)
+        self.search_btn.clicked.connect(lambda: self.search_btn_clicked())
+        self.setWindowIcon(QtGui.QIcon("feather_601060\\search.svg"))
+        self.search_win_verticalLayout.addLayout(self.search_win_horizontalLayout_2)
+        self.search_btn.setText("Search")
+
+        self.search_win_horizontalLayout = QtWidgets.QHBoxLayout()
+        self.search_win_horizontalLayout.setObjectName("search_win_horizontalLayout")
+
+        self.search_win_verticalLayout.addLayout(self.search_win_horizontalLayout_2)
+        self.search_win_gridLayout.addLayout(self.search_win_verticalLayout, 1, 1, 1, 1)
+        self.showing = False
+
+    def search_btn_clicked(self):
+        self.search_query = self.input_search.text()
+        self.search_page = 1
+        self.search_upto = 0
+
+        # Check query exists.
+        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
+        cards = re.split("QUESTION\^\^\$=|ANSWER\^\^\$=|EASE\^\^\$=", cards_text.read())
+        cards.pop(0)
+        is_in = False
+        for i in range(len(cards)):
+            if i % 3 == 0 or i % 3 == 1:
+                if self.search_query in cards[i]:
+                    is_in = True
+        cards_text.close()
+
+        if is_in:
+            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
+            self.search_card_idxs = []
+            cards = cards_text.read().split("DECK^^$=")
+            cards.pop(0)
+            cards_deck_and_rest = []
+            for i in range(len(cards)):
+                cards_deck_and_rest.append(cards[i][:cards[i].index("QUESTION^^$=")])
+                cards_deck_and_rest.append(cards[i][cards[i].index("QUESTION^^$="):])
+            for i in range(len(cards)):
+                if self.deck == cards_deck_and_rest[i*2]:
+                    qst_onwards = cards_deck_and_rest[i*2 + 1].split("QUESTION^^$=")
+                    qst = qst_onwards[1].split("ANSWER^^$=")[0]
+                    ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
+                    if self.search_query in qst or self.search_query in ans:
+                        self.search_card_idxs.append(i)
+
+            if len(self.search_card_idxs) != 0:
+                qst_onwards = cards[self.search_card_idxs[self.search_upto]].split("QUESTION^^$=")
+                qst = qst_onwards[1].split("ANSWER^^$=")[0]
+                ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
+
+            cards_text.close()
+
+            if (not self.showing) and (len(self.search_card_idxs) != 0):
+                self.search_qst_label = QtWidgets.QLabel(self)
+                self.search_qst_label.setMinimumSize(QtCore.QSize(140, 25))
+                self.search_qst_label.setMaximumSize(QtCore.QSize(140, 25))
+                font = QtGui.QFont("Verdana")
+                font.setPointSize(12)
+                self.search_qst_label.setFont(font)
+                self.search_qst_label.setStyleSheet("color:white;\n"
+                                                    "border:none;")
+                self.search_qst_label.setObjectName("search_qst_label")
+                self.search_win_verticalLayout.addWidget(self.search_qst_label)
+                self.search_qst_label.setText("Question:")
+
+                self.search_qst_text = QtWidgets.QTextEdit(self)
+                font = QtGui.QFont("Verdana")
+                font.setPointSize(12)
+                self.search_qst_text.setFont(font)
+                self.search_qst_text.setStyleSheet("""
+                                                    background-color: rgba(255, 255, 255, 0.1);
+                                                    border-radius:15px;
+                                                    padding:5px;
+                                                    color: white;
+                                                    """)
+                self.search_qst_text.setObjectName("search_qst_text")
+                self.search_win_verticalLayout.addWidget(self.search_qst_text)
+
+                self.search_ans_label = QtWidgets.QLabel(self)
+                self.search_ans_label.setMinimumSize(QtCore.QSize(140, 25))
+                self.search_ans_label.setMaximumSize(QtCore.QSize(140, 25))
+                font = QtGui.QFont("Verdana")
+                font.setPointSize(12)
+                self.search_ans_label.setFont(font)
+                self.search_ans_label.setStyleSheet("color:white;\n"
+                                                    "border:none;")
+                self.search_ans_label.setObjectName("search_ans_label")
+                self.search_win_verticalLayout.addWidget(self.search_ans_label)
+                self.search_ans_label.setText("Answer:")
+
+                self.search_ans_text = QtWidgets.QTextEdit(self)
+                font = QtGui.QFont("Verdana")
+                font.setPointSize(12)
+                self.search_ans_text.setFont(font)
+                self.search_ans_text.setStyleSheet("""
+                                                   background-color: rgba(255, 255, 255, 0.1);
+                                                   border-radius:15px;
+                                                   padding:5px;
+                                                   color: white;
+                                                   """)
+                self.search_ans_text.setObjectName("search_ans_text")
+                self.search_win_verticalLayout.addWidget(self.search_ans_text)
+
+                self.search_save_btn = QtWidgets.QPushButton(self)
+                self.search_save_btn.setMinimumSize(QtCore.QSize(200, 40))
+                self.search_save_btn.setMaximumSize(QtCore.QSize(200, 40))
+                font = QtGui.QFont("Verdana")
+                font.setPointSize(12)
+                self.search_save_btn.setFont(font)
+                self.search_save_btn.setStyleSheet("""
+                                                    QPushButton#search_save_btn{
+                                                        background-color: transparent;
+                                                        text-align: left;
+                                                        color: white;
+                                                        border-radius: 15px;
+                                                        border: 1px solid white;
+                                                        text-align: center;
+                                                    }
+                                                    QPushButton#search_save_btn:hover{
+                                                        background-color: rgba(255, 255, 255, 0.1);
+                                                    }
+                                                    QPushButton#search_save_btn:pressed{
+                                                        background-color: rgba(255, 255, 255, 0.2);
+                                                    }
+                                                    """)
+                self.search_save_btn.setObjectName("search_save_btn")
+                self.search_win_horizontalLayout.addWidget(self.search_save_btn)
+                self.search_save_btn.setText("Save")
+                self.search_save_btn.clicked.connect(lambda: self.search_save_btn_clicked())
+
+                self.search_del_btn = QtWidgets.QPushButton(self)
+                self.search_del_btn.setMinimumSize(QtCore.QSize(200, 40))
+                self.search_del_btn.setMaximumSize(QtCore.QSize(200, 40))
+                font = QtGui.QFont("Verdana")
+                font.setPointSize(12)
+                self.search_del_btn.setFont(font)
+                self.search_del_btn.setStyleSheet("""
+                                                QPushButton#search_del_btn{
+                                                    background-color: transparent;
+                                                    text-align: left;
+                                                    color: white;
+                                                    border-radius: 15px;
+                                                    border: 1px solid white;
+                                                    text-align: center;
+                                                }
+                                                QPushButton#search_del_btn:hover{
+                                                    background-color: rgba(255, 255, 255, 0.1);
+                                                }
+                                                QPushButton#search_del_btn:pressed{
+                                                    background-color: rgba(255, 255, 255, 0.2);
+                                                }
+                                                """)
+                self.search_del_btn.setObjectName("search_del_btn")
+                self.search_win_horizontalLayout.addWidget(self.search_del_btn)
+                self.search_del_btn.setText("Delete")
+                self.search_del_btn.clicked.connect(lambda: self.search_del_btn_clicked())
+
+                spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+                self.search_win_horizontalLayout.addItem(spacerItem1)
+
+                self.search_left_btn = QtWidgets.QPushButton(self)
+                self.search_left_btn.setMinimumSize(QtCore.QSize(70, 40))
+                self.search_left_btn.setMaximumSize(QtCore.QSize(70, 40))
+                font = QtGui.QFont("Verdana")
+                font.setPointSize(12)
+                self.search_left_btn.setFont(font)
+                self.search_left_btn.setStyleSheet("""
+                                                QPushButton#search_left_btn{
+                                                    background-color: transparent;
+                                                    text-align: left;
+                                                    color: white;
+                                                    border-radius: 15px;
+                                                    border: 1px solid white;
+                                                    text-align: center;
+                                                }
+                                                QPushButton#search_left_btn:hover{
+                                                    background-color: rgba(255, 255, 255, 0.1);
+                                                }
+                                                QPushButton#search_left_btn:pressed{
+                                                    background-color: rgba(255, 255, 255, 0.2);
+                                                }
+                                                """)
+                self.search_left_btn.setText("")
+                icon3 = QtGui.QIcon()
+                icon3.addPixmap(QtGui.QPixmap("feather_white\\chevron-left.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+                self.search_left_btn.setIcon(icon3)
+                self.search_left_btn.setIconSize(QtCore.QSize(22, 22))
+                self.search_left_btn.setObjectName("search_left_btn")
+                self.search_win_horizontalLayout.addWidget(self.search_left_btn)
+                self.search_left_btn.clicked.connect(lambda: self.search_left_btn_clicked())
+
+                self.card_of_card_label = QtWidgets.QLabel(self)
+                self.card_of_card_label.setMinimumSize(QtCore.QSize(100, 40))
+                self.card_of_card_label.setMaximumSize(QtCore.QSize(100, 40))
+                font = QtGui.QFont("Verdana")
+                font.setPointSize(12)
+                self.card_of_card_label.setFont(font)
+                self.card_of_card_label.setStyleSheet("color:white;\n"
+                                                      "border:none;")
+                self.card_of_card_label.setAlignment(QtCore.Qt.AlignCenter)
+                self.card_of_card_label.setObjectName("card_of_card_label")
+                self.search_win_horizontalLayout.addWidget(self.card_of_card_label)
+
+                self.search_right_btn = QtWidgets.QPushButton(self)
+                self.search_right_btn.setMinimumSize(QtCore.QSize(70, 40))
+                self.search_right_btn.setMaximumSize(QtCore.QSize(70, 40))
+                font = QtGui.QFont("Verdana")
+                font.setPointSize(12)
+                self.search_right_btn.setFont(font)
+                self.search_right_btn.setStyleSheet("""
+                                                    QPushButton#search_right_btn{
+                                                        background-color: transparent;
+                                                        text-align: left;
+                                                        color: white;
+                                                        border-radius: 15px;
+                                                        border: 1px solid white;
+                                                        text-align: center;
+                                                    }
+                                                    QPushButton#search_right_btn:hover{
+                                                        background-color: rgba(255, 255, 255, 0.1);
+                                                    }
+                                                    QPushButton#search_right_btn:pressed{
+                                                        background-color: rgba(255, 255, 255, 0.2);
+                                                    }
+                                                    """)
+                self.search_right_btn.setText("")
+                icon4 = QtGui.QIcon()
+                icon4.addPixmap(QtGui.QPixmap("feather_white\\chevron-right.svg"),
+                                QtGui.QIcon.Normal, QtGui.QIcon.Off)
+                self.search_right_btn.setIcon(icon4)
+                self.search_right_btn.setIconSize(QtCore.QSize(22, 22))
+                self.search_right_btn.setObjectName("search_right_btn")
+                self.search_win_horizontalLayout.addWidget(self.search_right_btn)
+                self.search_right_btn.clicked.connect(lambda: self.search_right_btn_clicked())
+
+                self.search_win_verticalLayout.addLayout(self.search_win_horizontalLayout)
+                self.search_win_gridLayout.addLayout(self.search_win_verticalLayout, 1, 1, 1, 1)
+                self.showing = True
+
+                self.search_qst_text.setText(qst)
+                self.search_ans_text.setText(ans)
+                self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
+
+            elif len(self.search_card_idxs) != 0:
+                self.search_qst_text.setText(qst)
+                self.search_ans_text.setText(ans)
+                self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
+
+            else:
+                msg = QtWidgets.QMessageBox()
+                msg.setWindowTitle("Not found")
+                center = QDesktopWidget().availableGeometry().center()
+                msg.move(center)
+                msg.setIcon(QtWidgets.QMessageBox.Information)
+                msg.setText("No card with that text was found.")
+                msg.exec_()
+
+        else:
+            msg = QtWidgets.QMessageBox()
+            msg.setWindowTitle("Not found")
+            center = QDesktopWidget().availableGeometry().center()
+            msg.move(center)
+            msg.setIcon(QtWidgets.QMessageBox.Information)
+            msg.setText("No card with that text was found.")
+            msg.exec_()
+
+    def search_save_btn_clicked(self):
+        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
+        num_of_cards = len(cards_text.read().split("DECK^^$=")) - 1
+        cards_text.seek(0)
+        cards_parts = re.split("DECK\^\^\$=|QUESTION\^\^\$=|ANSWER\^\^\$=|EASE\^\^\$=", cards_text.read())
+        cards_parts.pop(0)
+        # Math is relevant to the splitting.
+        qst_idx = self.search_card_idxs[self.search_upto] * 4 + 1
+        cards_parts[qst_idx] = self.search_qst_text.toPlainText().strip()
+        cards_parts[qst_idx + 1] = self.search_ans_text.toPlainText().strip()
+        cards_text.close()
+
+        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "w")
+        cards_parts_f = []
+        for i in range(num_of_cards):
+            n = i * 4
+            cards_parts_f.append(f"DECK^^$={cards_parts[n]}QUESTION^^$={cards_parts[n + 1]}ANSWER^^$={cards_parts[n + 2]}EASE^^$={cards_parts[n + 3]}")
+        cards_text.writelines(cards_parts_f)
+        cards_text.close()
+
+    def search_del_btn_clicked(self):
+        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
+        cards = cards_text.read().split("DECK^^$=")
+        cards.pop(0)
+        cards.pop(self.search_card_idxs[self.search_upto])
+        cards_text.close()
+        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "w")
+        for idx, i in enumerate(cards):
+            cards[idx] = "DECK^^$=" + i
+        cards_text.writelines(cards)
+        cards_text.close()
+        if len(self.search_card_idxs) == 1:
+            self.close()
+        else:
+            self.search_btn_clicked()
+
+    def search_right_btn_clicked(self):
+        if self.search_page != len(self.search_card_idxs):
+            self.search_page += 1
+            self.search_upto += 1
+
+            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
+            cards = cards_text.read().split("DECK^^$=")
+            cards.pop(0)
+
+            qst_onwards = cards[self.search_card_idxs[self.search_upto]].split("QUESTION^^$=")
+            qst = qst_onwards[1].split("ANSWER^^$=")[0]
+            ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
+
+            self.search_qst_text.setText(qst)
+            self.search_ans_text.setText(ans)
+            self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
+
+            cards_text.close()
+
+    def search_left_btn_clicked(self):
+        if self.search_page != 1:
+            self.search_page -= 1
+            self.search_upto -= 1
+
+            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
+            cards = cards_text.read().split("DECK^^$=")
+            cards.pop(0)
+
+            qst_onwards = cards[self.search_card_idxs[self.search_upto]].split("QUESTION^^$=")
+            qst = qst_onwards[1].split("ANSWER^^$=")[0]
+            ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
+
+            self.search_qst_text.setText(qst)
+            self.search_ans_text.setText(ans)
+            self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
+
+            cards_text.close()
 
 
 if __name__ == "__main__":
