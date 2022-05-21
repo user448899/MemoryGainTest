@@ -1472,6 +1472,17 @@ class MainWin:
             self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
 
     def search_deck_btn_clicked(self, deck):
+        Thread(target=self.search_deck_window(deck)).start()
+        Thread(target=self.search_deck_checker).start()
+
+    def search_deck_checker(self):
+        while True:
+            time.sleep(0.1)
+            if not self.main_win.isVisible():
+                self.search_win.close()
+                break
+
+    def search_deck_window(self, deck):
         self.search_win = SearchWin(deck)
         self.search_win.show()
 
