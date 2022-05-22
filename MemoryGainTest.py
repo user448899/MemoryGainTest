@@ -238,11 +238,6 @@ class MainWin:
         self.main_win_centralwidget = QtWidgets.QWidget()
         self.main_win_centralwidget.deleteLater()
 
-        # Closes Create deck window. "create_deck_win" is reassigned as so this function can be called even if the
-        # create deck window is not open.
-        self.create_deck_win = QtWidgets.QWidget()
-        self.create_deck_win.close()
-
         # Creates the study window contents.
         self.study_centralwidget = QtWidgets.QWidget()
         self.study_gridLayout = QtWidgets.QGridLayout(self.study_centralwidget)
