@@ -1647,8 +1647,6 @@ class MainWin:
         # Closes the Add cards window and Search window.
         self.add_cards_win = QtWidgets.QWidget()
         self.add_cards_win.close()
-        self.search_win = QtWidgets.QWidget()
-        self.search_win.close()
 
         # Clears the deck layout.
         self.deck_label.deleteLater()
