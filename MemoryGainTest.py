@@ -1477,7 +1477,8 @@ class MainWin:
             self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
 
     def search_deck_btn_clicked(self, deck):
-        Thread(target=self.search_deck_window(deck)).start()
+        self.search_win = SearchWin(deck)
+        self.search_win.show()
         Thread(target=self.search_deck_checker).start()
 
     def search_deck_checker(self):
@@ -1488,10 +1489,6 @@ class MainWin:
                 break
             if not self.search_win.isVisible():
                 break
-
-    def search_deck_window(self, deck):
-        self.search_win = SearchWin(deck)
-        self.search_win.show()
 
     def add_cards_btn_clicked(self, deck):
         self.add_cards_win = QtWidgets.QWidget()
