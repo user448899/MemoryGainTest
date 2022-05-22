@@ -2289,7 +2289,6 @@ class CreateDeckWin(QtWidgets.QWidget):
     def setup_ui(self):
         self.setObjectName("create_deck_win")
         self.resize(600, 150)
-        self.setMinimumSize(QtCore.QSize(600, 150))
         self.setMaximumSize(QtCore.QSize(600, 150))
         self.setStyleSheet("""
                             QWidget#create_deck_win{
