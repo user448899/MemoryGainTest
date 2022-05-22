@@ -34,6 +34,10 @@ class MainWin:
         self.temp_path = tempfile.gettempdir()
 
     def setupUi(self):
+        # self.home_showing is used by self.deck_refresher() to decide whether or not to re-draw the main_win scroll area
+        # to show newly created decks.
+        self.home_showing = True
+
         # File and directory checker.
         memorygaindir_on_device = os.path.exists(f"{self.temp_path}\\..\\MemoryGain")
         cards_on_device = os.path.exists(f"{self.temp_path}\\..\\MemoryGain\\cards.txt")
@@ -228,6 +232,7 @@ class MainWin:
         self.main_win.show()
 
     def study_btn_clicked(self):
+        self.home_showing = False
         # Clears main_win. "main_win_centralwidget" is reassigned as so this function can be called when cancelling
         # an edit from the study window.
         self.main_win_centralwidget = QtWidgets.QWidget()
@@ -709,6 +714,7 @@ class MainWin:
         self.study_qst_label.setText(card[1])
 
     def study_home_btn_clicked(self):
+        self.home_showing = True
         # Finds how many are due today.
         cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
         cards_parts = re.split("DUE\^\^\$=|INTERVAL\^\^\$=", cards_text.read())
@@ -860,9 +866,6 @@ class MainWin:
         self.create_deck_btn.raise_()
         self.main_win_scrollArea.raise_()
         self.main_win.setCentralWidget(self.main_win_centralwidget)
-
-        QtCore.QMetaObject.connectSlotsByName(self.main_win)
-
         self.main_win.setWindowTitle("Memory Gain")
         self.main_win_centralwidget.show()
 
@@ -1126,6 +1129,7 @@ class MainWin:
                                     self.got_card = l_b_g_B_rev_list[-1]
 
     def deck_btn_clicked(self, idx):
+        self.home_showing = False
         # Clears main_win.
         self.main_win_scrollArea.deleteLater()
         self.study_btn.deleteLater()
@@ -1275,6 +1279,7 @@ class MainWin:
 
     def del_deck_msg_clicked(self, btn, deck):
         if btn.text() == "OK":
+            self.home_showing = True
             # Deletes add cards and search window.
             self.add_cards_win = QtWidgets.QWidget()
             self.add_cards_win.deleteLater()
@@ -1481,6 +1486,8 @@ class MainWin:
             if not self.main_win.isVisible():
                 self.search_win.close()
                 break
+            if not self.search_win.isVisible():
+                break
 
     def search_deck_window(self, deck):
         self.search_win = SearchWin(deck)
@@ -1639,6 +1646,7 @@ class MainWin:
         self.add_cards_win.close()
 
     def back_decks_btn_clicked(self):
+        self.home_showing = True
         # Closes the Add cards window and Search window.
         self.add_cards_win = QtWidgets.QWidget()
         self.add_cards_win.close()
@@ -1796,184 +1804,12 @@ class MainWin:
         self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
 
     def create_deck_btn_clicked(self):
-        Thread(target=self.create_deck_window()).start()
-        Thread(target=self.create_deck_checker).start()
-
-    def create_deck_checker(self):
-        while True:
-            time.sleep(0.1)
-            if not self.main_win.isVisible():
-                self.create_deck_win = QtWidgets.QWidget()
-                self.create_deck_win.close()
-                break
-
-    def create_deck_window(self):
-        self.create_deck_win = QtWidgets.QWidget()
-        self.create_deck_win.setObjectName("create_deck_win")
-        self.create_deck_win.resize(600, 150)
-        self.create_deck_win.setMinimumSize(QtCore.QSize(600, 150))
-        self.create_deck_win.setMaximumSize(QtCore.QSize(600, 150))
-        self.create_deck_win.setStyleSheet("""
-                                        QWidget#create_deck_win{
-                                            background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(40, 10, 40, 255), stop:1 rgba(20, 0, 20, 255));
-                                      }
-                                      """)
-        self.create_deck_gridLayout = QtWidgets.QGridLayout(self.create_deck_win)
-        self.create_deck_gridLayout.setObjectName("create_deck_gridLayout")
-        self.create_deck_verticalLayout = QtWidgets.QVBoxLayout()
-        self.create_deck_verticalLayout.setObjectName("create_deck_verticalLayout")
-        self.create_deck_horizontalLayout = QtWidgets.QHBoxLayout()
-        self.create_deck_horizontalLayout.setObjectName("create_deck_horizontalLayout")
-
-        self.create_prompt_label = QtWidgets.QLabel(self.create_deck_win)
-        self.create_prompt_label.setMinimumSize(QtCore.QSize(60, 40))
-        self.create_prompt_label.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        font = QtGui.QFont()
-        font.setFamily("Verdana")
-        font.setPointSize(12)
-        self.create_prompt_label.setFont(font)
-        self.create_prompt_label.setStyleSheet("""
-                                                QLabel#create_prompt_label{
-                                                    color: white;
-                                               }
-                                               """)
-        self.create_prompt_label.setObjectName("create_prompt_label")
-        self.create_deck_horizontalLayout.addWidget(self.create_prompt_label)
-
-        self.create_input_text = QtWidgets.QLineEdit(self.create_deck_win)
-        self.create_input_text.setMinimumSize(QtCore.QSize(200, 40))
-        font = QtGui.QFont()
-        font.setFamily("Verdana")
-        font.setPointSize(12)
-        self.create_input_text.setFont(font)
-        self.create_input_text.setStyleSheet("""
-                                            QLineEdit#create_input_text{
-                                                background-color: rgba(255, 255, 255, 0.1);
-                                                border-radius: 15px;
-                                                padding-left: 5px;
-                                                padding-right: 5px;
-                                                color: white;
-                                             }
-                                             """)
-        self.create_input_text.setObjectName("create_input_text")
-        self.create_deck_horizontalLayout.addWidget(self.create_input_text)
-        self.create_deck_verticalLayout.addLayout(self.create_deck_horizontalLayout)
-
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.create_deck_verticalLayout.addItem(spacerItem)
-        self.create_deck_horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.create_deck_horizontalLayout_2.setObjectName("create_deck_horizontalLayout_2")
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.create_deck_horizontalLayout_2.addItem(spacerItem1)
-
-        self.create_ok_btn = QtWidgets.QPushButton(self.create_deck_win)
-        self.create_ok_btn.setMinimumSize(QtCore.QSize(150, 40))
-        self.create_ok_btn.setMaximumSize(QtCore.QSize(150, 40))
-        font = QtGui.QFont()
-        font.setFamily("Verdana")
-        font.setPointSize(12)
-        self.create_ok_btn.setFont(font)
-        self.create_ok_btn.setStyleSheet("QPushButton#create_ok_btn{\n"
-                                         "    background-color: transparent;\n"
-                                         "      border: 1px solid white;\n"
-                                         "       border-radius: 15px;\n"
-                                         "    color: white;\n"
-                                         "}\n"
-                                         "QPushButton#create_ok_btn:hover{\n"
-                                         "    background-color: rgba(255, 255, 255, 0.1);\n"
-                                         "}\n"
-                                         "QPushButton#create_ok_btn:pressed{\n"
-                                         "    background-color: rgba(255, 255, 255, 0.2);\n"
-                                         "}")
-        self.create_ok_btn.setObjectName("create_ok_btn")
-        self.create_deck_horizontalLayout_2.addWidget(self.create_ok_btn)
-        self.create_ok_btn.clicked.connect(lambda: self.create_ok_btn_clicked())
-
-        self.create_cancel_btn = QtWidgets.QPushButton(self.create_deck_win)
-        self.create_cancel_btn.setMinimumSize(QtCore.QSize(150, 40))
-        self.create_cancel_btn.setMaximumSize(QtCore.QSize(150, 40))
-        font = QtGui.QFont()
-        font.setFamily("Verdana")
-        font.setPointSize(12)
-        font.setWeight(50)
-        self.create_cancel_btn.setFont(font)
-        self.create_cancel_btn.setStyleSheet("QPushButton#create_cancel_btn{\n"
-                                             "    background-color: transparent;\n"
-                                             "      border: 1px solid white;\n"
-                                             "       border-radius: 15px;\n"
-                                             "    color: white;\n"
-                                             "}\n"
-                                             "QPushButton#create_cancel_btn:hover{\n"
-                                             "    background-color: rgba(255, 255, 255, 0.1);\n"
-                                             "}\n"
-                                             "QPushButton#create_cancel_btn:pressed{\n"
-                                             "    background-color: rgba(255, 255, 255, 0.2);\n"
-                                             "}")
-        self.create_cancel_btn.setObjectName("create_cancel_btn")
-        self.create_deck_horizontalLayout_2.addWidget(self.create_cancel_btn)
-        self.create_cancel_btn.clicked.connect(lambda: self.create_cancel_btn_clicked())
-
-        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.create_deck_horizontalLayout_2.addItem(spacerItem2)
-        self.create_deck_verticalLayout.addLayout(self.create_deck_horizontalLayout_2)
-        self.create_deck_gridLayout.addLayout(self.create_deck_verticalLayout, 0, 0, 1, 1)
-        spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.create_deck_gridLayout.addItem(spacerItem3, 1, 0, 1, 1)
-
-        self.create_deck_win.setWindowTitle("Create deck")
-        self.create_prompt_label.setText("Deck:")
-        self.create_ok_btn.setText("Ok")
-        self.create_cancel_btn.setText("Cancel")
-
-        self.create_deck_win.setWindowIcon(QtGui.QIcon("feather_601060\\plus.svg"))
-
+        # self.deck_refresher is passed in as a reference.
+        self.create_deck_win = CreateDeckWin(self.deck_refresher)
         self.create_deck_win.show()
 
-    def create_ok_btn_clicked(self):
-        decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
-        decks_lines = decks_text.readlines()
-        decks_text.close()
-
-        if "DECK^^$=" in self.create_input_text.text() or "QUESTION^^$=" in self.create_input_text.text() or "ANSWER^^$" in self.create_input_text.text() or "EASE^^$" in self.create_input_text.text() or "DUE^^$" in self.create_input_text.text() or "INTERVAL^^$" in self.create_input_text.text() or "PHASE^^$" in self.create_input_text.text():
-            msg = QtWidgets.QMessageBox()
-            msg.setWindowTitle("Invalid")
-            center = QDesktopWidget().availableGeometry().center()
-            msg.move(center)
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText("Due to the way items are stored, strings cannot contain\n\"DECK^^$=\", \"QUESTION^^$=\", \"ANSWER^^$=\", \"EASE^^$=\"\n\"DUE^^$=\", \"INTERVAL^^$=\", or \"PHASE^^$=\".")
-            msg.exec_()
-        elif self.create_input_text.text().strip() == "":
-            msg = QtWidgets.QMessageBox()
-            msg.setWindowTitle("Invalid")
-            center = QDesktopWidget().availableGeometry().center()
-            msg.move(center)
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText("Please enter a deck name.")
-            msg.exec_()
-        elif self.create_input_text.text().strip() + "\n" in decks_lines:
-            msg = QtWidgets.QMessageBox()
-            msg.setWindowTitle("Invalid")
-            center = QDesktopWidget().availableGeometry().center()
-            msg.move(center)
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText("That deck already exists.")
-            msg.exec_()
-        else:
-            decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "a")
-            decks_text.write(self.create_input_text.text().strip() + "\n")
-            decks_text.close()
-
-            # Writes the decks in alphabetical order so the deck buttons will also be in order and have their index.
-            # macth to the corresponding line in decks.txt.
-            decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
-            decks_sorted = decks_text.readlines()
-            decks_sorted.sort(key=str.lower)
-            decks_text.close()
-
-            decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "w")
-            decks_text.writelines(decks_sorted)
-            decks_text.close()
-
+    def deck_refresher(self):
+        if self.home_showing:
             while self.main_win_verticalLayout.count():
                 child = self.main_win_verticalLayout.takeAt(0)
                 if child.widget():
@@ -1984,47 +1820,55 @@ class MainWin:
             font.setPointSize(12)
             decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
             decks_lines = decks_text.readlines()
-            for idx, deck in enumerate(decks_lines):
+            for idx, i in enumerate(decks_lines):
                 self.deck_btn = QtWidgets.QPushButton(self.main_win_scrollAreaWidgetContents)
                 self.deck_btn.setMinimumSize(QtCore.QSize(282, 40))
                 self.deck_btn.setMaximumSize(QtCore.QSize(282, 40))
                 self.deck_btn.setFont(font)
                 self.deck_btn.setStyleSheet("""QPushButton#deck_btn{
-                                                background-color: transparent;
-                                                text-align: left;
-                                                color: white;
-                                                border-radius: 15px;
-                                            }
-                                            QPushButton#deck_btn:hover{
-                                                background-color: rgba(255, 255, 255, 0.1);
-                                            }
-                                            QPushButton#deck_btn:pressed{
-                                                background-color: rgba(255, 255, 255, 0.2);
-                                            }""")
+                                                            background-color: transparent;
+                                                            text-align: left;
+                                                            color: white;
+                                                            border-radius: 15px;
+                                                        }
+                                                        QPushButton#deck_btn:hover{
+                                                            background-color: rgba(255, 255, 255, 0.1);
+                                                        }
+                                                        QPushButton#deck_btn:pressed{
+                                                            background-color: rgba(255, 255, 255, 0.2);
+                                                        }""")
                 self.deck_btn.setObjectName("deck_btn")
 
-                self.deck_btn.setText("  " + deck.replace("\n", ""))
+                self.deck_btn.setText("  " + i.replace("\n", ""))
                 self.main_win_verticalLayout.addWidget(self.deck_btn)
-
-                # This has to be done as the deck button cannot be assigned the 'idx' variable directly as this will make it
-                # such that the argument of all buttons will be the last value of 'idx', i.e. if you write
-                # 'self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(idx))' all buttons will have the final value of 'idx'.
-                func = partial(self.deck_btn_clicked, idx)
-                self.deck_btn.clicked.connect(func)
+                if idx == 0:
+                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(0))
+                if idx == 1:
+                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(1))
+                if idx == 2:
+                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(2))
+                if idx == 3:
+                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(3))
+                if idx == 4:
+                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(4))
+                if idx == 5:
+                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(5))
+                if idx == 6:
+                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(6))
+                if idx == 7:
+                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(7))
+                if idx == 8:
+                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(8))
+                if idx == 9:
+                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(9))
 
             decks_text.close()
 
-            main_win_spacer2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum,
-                                                     QtWidgets.QSizePolicy.Expanding)
+            main_win_spacer2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
             self.main_win_verticalLayout.addItem(main_win_spacer2)
             self.main_win_scrollArea.setWidget(self.main_win_scrollAreaWidgetContents)
             self.main_win_gridLayout.addWidget(self.main_win_scrollArea, 3, 1, 1, 1)
             self.main_win.setCentralWidget(self.main_win_centralwidget)
-
-            self.create_deck_win.close()
-
-    def create_cancel_btn_clicked(self):
-        self.create_deck_win.close()
 
 
 class SearchWin(QtWidgets.QWidget):
@@ -2435,6 +2279,184 @@ class SearchWin(QtWidgets.QWidget):
             self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
 
             cards_text.close()
+
+
+class CreateDeckWin(QtWidgets.QWidget):
+    def __init__(self, refresher):
+        super().__init__()
+        self.refresher = refresher
+        self.temp_path = tempfile.gettempdir()
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.setObjectName("create_deck_win")
+        self.resize(600, 150)
+        self.setMinimumSize(QtCore.QSize(600, 150))
+        self.setMaximumSize(QtCore.QSize(600, 150))
+        self.setStyleSheet("""
+                            QWidget#create_deck_win{
+                                background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(40, 10, 40, 255), stop:1 rgba(20, 0, 20, 255));
+                          }
+                          """)
+        self.create_deck_gridLayout = QtWidgets.QGridLayout(self)
+        self.create_deck_gridLayout.setObjectName("create_deck_gridLayout")
+        self.create_deck_verticalLayout = QtWidgets.QVBoxLayout()
+        self.create_deck_verticalLayout.setObjectName("create_deck_verticalLayout")
+        self.create_deck_horizontalLayout = QtWidgets.QHBoxLayout()
+        self.create_deck_horizontalLayout.setObjectName("create_deck_horizontalLayout")
+
+        self.create_prompt_label = QtWidgets.QLabel(self)
+        self.create_prompt_label.setMinimumSize(QtCore.QSize(60, 40))
+        self.create_prompt_label.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        font = QtGui.QFont()
+        font.setFamily("Verdana")
+        font.setPointSize(12)
+        self.create_prompt_label.setFont(font)
+        self.create_prompt_label.setStyleSheet("""
+                                                        QLabel#create_prompt_label{
+                                                            color: white;
+                                                       }
+                                                       """)
+        self.create_prompt_label.setObjectName("create_prompt_label")
+        self.create_deck_horizontalLayout.addWidget(self.create_prompt_label)
+
+        self.create_input_text = QtWidgets.QLineEdit(self)
+        self.create_input_text.setMinimumSize(QtCore.QSize(200, 40))
+        font = QtGui.QFont()
+        font.setFamily("Verdana")
+        font.setPointSize(12)
+        self.create_input_text.setFont(font)
+        self.create_input_text.setStyleSheet("""
+                                                    QLineEdit#create_input_text{
+                                                        background-color: rgba(255, 255, 255, 0.1);
+                                                        border-radius: 15px;
+                                                        padding-left: 5px;
+                                                        padding-right: 5px;
+                                                        color: white;
+                                                     }
+                                                     """)
+        self.create_input_text.setObjectName("create_input_text")
+        self.create_deck_horizontalLayout.addWidget(self.create_input_text)
+        self.create_deck_verticalLayout.addLayout(self.create_deck_horizontalLayout)
+
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.create_deck_verticalLayout.addItem(spacerItem)
+        self.create_deck_horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.create_deck_horizontalLayout_2.setObjectName("create_deck_horizontalLayout_2")
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.create_deck_horizontalLayout_2.addItem(spacerItem1)
+
+        self.create_ok_btn = QtWidgets.QPushButton(self)
+        self.create_ok_btn.setMinimumSize(QtCore.QSize(150, 40))
+        self.create_ok_btn.setMaximumSize(QtCore.QSize(150, 40))
+        font = QtGui.QFont()
+        font.setFamily("Verdana")
+        font.setPointSize(12)
+        self.create_ok_btn.setFont(font)
+        self.create_ok_btn.setStyleSheet("QPushButton#create_ok_btn{\n"
+                                         "    background-color: transparent;\n"
+                                         "      border: 1px solid white;\n"
+                                         "       border-radius: 15px;\n"
+                                         "    color: white;\n"
+                                         "}\n"
+                                         "QPushButton#create_ok_btn:hover{\n"
+                                         "    background-color: rgba(255, 255, 255, 0.1);\n"
+                                         "}\n"
+                                         "QPushButton#create_ok_btn:pressed{\n"
+                                         "    background-color: rgba(255, 255, 255, 0.2);\n"
+                                         "}")
+        self.create_ok_btn.setObjectName("create_ok_btn")
+        self.create_deck_horizontalLayout_2.addWidget(self.create_ok_btn)
+        self.create_ok_btn.clicked.connect(lambda: self.create_ok_btn_clicked())
+
+        self.create_cancel_btn = QtWidgets.QPushButton(self)
+        self.create_cancel_btn.setMinimumSize(QtCore.QSize(150, 40))
+        self.create_cancel_btn.setMaximumSize(QtCore.QSize(150, 40))
+        font = QtGui.QFont()
+        font.setFamily("Verdana")
+        font.setPointSize(12)
+        font.setWeight(50)
+        self.create_cancel_btn.setFont(font)
+        self.create_cancel_btn.setStyleSheet("QPushButton#create_cancel_btn{\n"
+                                             "    background-color: transparent;\n"
+                                             "      border: 1px solid white;\n"
+                                             "       border-radius: 15px;\n"
+                                             "    color: white;\n"
+                                             "}\n"
+                                             "QPushButton#create_cancel_btn:hover{\n"
+                                             "    background-color: rgba(255, 255, 255, 0.1);\n"
+                                             "}\n"
+                                             "QPushButton#create_cancel_btn:pressed{\n"
+                                             "    background-color: rgba(255, 255, 255, 0.2);\n"
+                                             "}")
+        self.create_cancel_btn.setObjectName("create_cancel_btn")
+        self.create_deck_horizontalLayout_2.addWidget(self.create_cancel_btn)
+        self.create_cancel_btn.clicked.connect(lambda: self.create_cancel_btn_clicked())
+
+        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.create_deck_horizontalLayout_2.addItem(spacerItem2)
+        self.create_deck_verticalLayout.addLayout(self.create_deck_horizontalLayout_2)
+        self.create_deck_gridLayout.addLayout(self.create_deck_verticalLayout, 0, 0, 1, 1)
+        spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.create_deck_gridLayout.addItem(spacerItem3, 1, 0, 1, 1)
+
+        self.setWindowTitle("Create deck")
+        self.create_prompt_label.setText("Deck:")
+        self.create_ok_btn.setText("Ok")
+        self.create_cancel_btn.setText("Cancel")
+
+        self.setWindowIcon(QtGui.QIcon("feather_601060\\plus.svg"))
+
+    def create_ok_btn_clicked(self):
+        decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
+        decks_lines = decks_text.readlines()
+        decks_text.close()
+
+        if "DECK^^$=" in self.create_input_text.text() or "QUESTION^^$=" in self.create_input_text.text() or "ANSWER^^$" in self.create_input_text.text() or "EASE^^$" in self.create_input_text.text() or "DUE^^$" in self.create_input_text.text() or "INTERVAL^^$" in self.create_input_text.text() or "PHASE^^$" in self.create_input_text.text():
+            msg = QtWidgets.QMessageBox()
+            msg.setWindowTitle("Invalid")
+            center = QDesktopWidget().availableGeometry().center()
+            msg.move(center)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setText("Due to the way items are stored, strings cannot contain\n\"DECK^^$=\", \"QUESTION^^$=\", \"ANSWER^^$=\", \"EASE^^$=\"\n\"DUE^^$=\", \"INTERVAL^^$=\", or \"PHASE^^$=\".")
+            msg.exec_()
+        elif self.create_input_text.text().strip() == "":
+            msg = QtWidgets.QMessageBox()
+            msg.setWindowTitle("Invalid")
+            center = QDesktopWidget().availableGeometry().center()
+            msg.move(center)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setText("Please enter a deck name.")
+            msg.exec_()
+        elif self.create_input_text.text().strip() + "\n" in decks_lines:
+            msg = QtWidgets.QMessageBox()
+            msg.setWindowTitle("Invalid")
+            center = QDesktopWidget().availableGeometry().center()
+            msg.move(center)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setText("That deck already exists.")
+            msg.exec_()
+        else:
+            decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "a")
+            decks_text.write(self.create_input_text.text().strip() + "\n")
+            decks_text.close()
+
+            # Writes the decks in alphabetical order so the deck buttons will also be in order and have their index.
+            # match to the corresponding line in decks.txt.
+            decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
+            decks_sorted = decks_text.readlines()
+            decks_sorted.sort(key=str.lower)
+            decks_text.close()
+
+            decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "w")
+            decks_text.writelines(decks_sorted)
+            decks_text.close()
+
+            self.refresher()
+            self.close()
+
+    def create_cancel_btn_clicked(self):
+        self.close()
 
 
 if __name__ == "__main__":
