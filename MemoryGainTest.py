@@ -1275,8 +1275,10 @@ class MainWin:
             self.add_cards_win = QtWidgets.QWidget()
             self.add_cards_win.deleteLater()
 
-            self.search_win = QtWidgets.QWidget()
-            self.search_win.deleteLater()
+            try:
+                self.search_win.close()
+            except:
+                pass
 
             decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
             decks_lines = decks_text.readlines()
