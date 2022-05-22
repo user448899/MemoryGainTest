@@ -1818,47 +1818,34 @@ class MainWin:
             font.setPointSize(12)
             decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
             decks_lines = decks_text.readlines()
-            for idx, i in enumerate(decks_lines):
+            for idx, deck in enumerate(decks_lines):
                 self.deck_btn = QtWidgets.QPushButton(self.main_win_scrollAreaWidgetContents)
                 self.deck_btn.setMinimumSize(QtCore.QSize(282, 40))
                 self.deck_btn.setMaximumSize(QtCore.QSize(282, 40))
                 self.deck_btn.setFont(font)
-                self.deck_btn.setStyleSheet("""QPushButton#deck_btn{
-                                                            background-color: transparent;
-                                                            text-align: left;
-                                                            color: white;
-                                                            border-radius: 15px;
-                                                        }
-                                                        QPushButton#deck_btn:hover{
-                                                            background-color: rgba(255, 255, 255, 0.1);
-                                                        }
-                                                        QPushButton#deck_btn:pressed{
-                                                            background-color: rgba(255, 255, 255, 0.2);
-                                                        }""")
+                self.deck_btn.setStyleSheet("""
+                                            QPushButton#deck_btn{
+                                                background-color: transparent;
+                                                text-align: left;
+                                                color: white;
+                                                border-radius: 15px;
+                                            }
+                                            QPushButton#deck_btn:hover{
+                                                background-color: rgba(255, 255, 255, 0.1);
+                                            }
+                                            QPushButton#deck_btn:pressed{
+                                                background-color: rgba(255, 255, 255, 0.2);
+                                            }
+                                            """)
                 self.deck_btn.setObjectName("deck_btn")
-
-                self.deck_btn.setText("  " + i.replace("\n", ""))
+                self.deck_btn.setText("  " + deck.replace("\n", ""))
                 self.main_win_verticalLayout.addWidget(self.deck_btn)
-                if idx == 0:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(0))
-                if idx == 1:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(1))
-                if idx == 2:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(2))
-                if idx == 3:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(3))
-                if idx == 4:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(4))
-                if idx == 5:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(5))
-                if idx == 6:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(6))
-                if idx == 7:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(7))
-                if idx == 8:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(8))
-                if idx == 9:
-                    self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(9))
+
+                # This has to be done as the deck button cannot be assigned the 'idx' variable directly as this will make it
+                # such that the argument of all buttons will be the last value of 'idx', i.e. if you write
+                # 'self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(idx))' all buttons will have the final value of 'idx'.
+                func = partial(self.deck_btn_clicked, idx)
+                self.deck_btn.clicked.connect(func)
 
             decks_text.close()
 
