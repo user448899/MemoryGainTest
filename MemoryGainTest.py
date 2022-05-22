@@ -1135,10 +1135,6 @@ class MainWin:
         self.study_btn.deleteLater()
         self.create_deck_btn.deleteLater()
 
-        # Closes Create deck window.
-        self.create_deck_win = QtWidgets.QWidget()
-        self.create_deck_win.close()
-
         decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
         deck = decks_text.readlines()[idx].replace("\n", "")
         decks_text.close()
@@ -1802,6 +1798,16 @@ class MainWin:
         # self.deck_refresher is passed in as a reference.
         self.create_deck_win = CreateDeckWin(self.deck_refresher)
         self.create_deck_win.show()
+        Thread(target=self.create_deck_checker).start()
+
+    def create_deck_checker(self):
+        while True:
+            time.sleep(0.1)
+            if not self.main_win.isVisible():
+                self.create_deck_win.close()
+                break
+            if not self.create_deck_win.isVisible():
+                break
 
     def deck_refresher(self):
         if self.home_showing:
