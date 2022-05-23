@@ -15,9 +15,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-
-import time
-from threading import Thread
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 from PyQt5.QtWidgets import QDesktopWidget
@@ -1564,19 +1561,19 @@ class MainWin:
         font.setPointSize(12)
         self.study_btn.setFont(font)
         self.study_btn.setStyleSheet("""
-                                                    QPushButton#study_btn{
-                                                        background-color:transparent;
-                                                        border-radius: 15px;
-                                                        border: 1px solid white;
-                                                        color: white;
-                                                    }
-                                                    QPushButton#study_btn:hover{
-                                                        background-color: rgba(255, 255, 255, 0.1);
-                                                    }
-                                                    QPushButton#study_btn:pressed{
-                                                        background-color: rgba(255, 255, 255, 0.2);
-                                                    }
-                                                    """)
+                                        QPushButton#study_btn{
+                                            background-color:transparent;
+                                            border-radius: 15px;
+                                            border: 1px solid white;
+                                            color: white;
+                                        }
+                                        QPushButton#study_btn:hover{
+                                            background-color: rgba(255, 255, 255, 0.1);
+                                        }
+                                        QPushButton#study_btn:pressed{
+                                            background-color: rgba(255, 255, 255, 0.2);
+                                        }
+                                        """)
         if num_to_study < 1000:
             self.study_btn.setText(f"Study {num_to_study}")
         else:
