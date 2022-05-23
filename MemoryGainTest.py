@@ -1472,18 +1472,21 @@ class MainWin:
             self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
 
     def search_deck_btn_clicked(self, deck):
-        self.search_win = SearchWin(deck)
-        self.search_win.show()
-        Thread(target=self.search_deck_checker).start()
+        self.deck_label.setText("Please finish searching the deck.")
+        self.add_cards_btn.hide()
+        self.search_deck_btn.hide()
+        self.del_deck_btn.hide()
+        self.back_decks_btn.hide()
 
-    def search_deck_checker(self):
-        while True:
-            time.sleep(0.1)
-            if not self.main_win.isVisible():
-                self.search_win.close()
-                break
-            if not self.search_win.isVisible():
-                break
+        self.search_win = SearchWin(deck)
+        self.search_win.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowMaximizeButtonHint | QtCore.Qt.WindowCloseButtonHint)
+        self.search_win.exec_()
+
+        self.deck_label.setText(deck)
+        self.add_cards_btn.show()
+        self.search_deck_btn.show()
+        self.del_deck_btn.show()
+        self.back_decks_btn.show()
 
     def add_cards_btn_clicked(self, deck):
         self.deck_label.setText("Please finish adding cards.")
@@ -1723,7 +1726,7 @@ class MainWin:
             self.main_win.setCentralWidget(self.main_win_centralwidget)
 
 
-class SearchWin(QtWidgets.QWidget):
+class SearchWin(QtWidgets.QDialog):
     def __init__(self, deck):
         super().__init__()
         self.deck = deck
