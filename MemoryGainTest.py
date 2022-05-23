@@ -1656,6 +1656,7 @@ class MainWin:
     def create_deck_btn_clicked(self):
         # self.deck_refresher is passed in as a reference.
         self.create_deck_win = CreateDeckWin(self.deck_refresher)
+        self.create_deck_win.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
         self.create_deck_win.exec_()
 
     def deck_refresher(self):
