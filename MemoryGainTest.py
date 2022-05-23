@@ -1272,8 +1272,10 @@ class MainWin:
         if btn.text() == "OK":
             self.home_showing = True
             # Deletes add cards and search window.
-            self.add_cards_win = QtWidgets.QWidget()
-            self.add_cards_win.deleteLater()
+            try:
+                self.add_cards_win.close()
+            except:
+                pass
 
             try:
                 self.search_win.close()
@@ -1484,8 +1486,21 @@ class MainWin:
                 break
 
     def add_cards_btn_clicked(self, deck):
+        self.deck_label.setText("Please finish adding cards.")
+        self.add_cards_btn.hide()
+        self.search_deck_btn.hide()
+        self.del_deck_btn.hide()
+        self.back_decks_btn.hide()
+
         self.add_cards_win = AddCardsWin(deck)
-        self.add_cards_win.show()
+        self.add_cards_win.setWindowFlags(QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowMaximizeButtonHint | QtCore.Qt.WindowCloseButtonHint)
+        self.add_cards_win.exec_()
+
+        self.deck_label.setText(deck)
+        self.add_cards_btn.show()
+        self.search_deck_btn.show()
+        self.del_deck_btn.show()
+        self.back_decks_btn.show()
 
     def back_decks_btn_clicked(self):
         self.home_showing = True
@@ -2295,7 +2310,7 @@ class CreateDeckWin(QtWidgets.QWidget):
         self.close()
 
 
-class AddCardsWin(QtWidgets.QWidget):
+class AddCardsWin(QtWidgets.QDialog):
     def __init__(self, deck):
         super().__init__()
         self.deck = deck
