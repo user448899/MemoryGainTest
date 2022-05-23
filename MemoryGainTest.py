@@ -1656,17 +1656,7 @@ class MainWin:
     def create_deck_btn_clicked(self):
         # self.deck_refresher is passed in as a reference.
         self.create_deck_win = CreateDeckWin(self.deck_refresher)
-        self.create_deck_win.show()
-        Thread(target=self.create_deck_checker).start()
-
-    def create_deck_checker(self):
-        while True:
-            time.sleep(0.1)
-            if not self.main_win.isVisible():
-                self.create_deck_win.close()
-                break
-            if not self.create_deck_win.isVisible():
-                break
+        self.create_deck_win.exec_()
 
     def deck_refresher(self):
         if self.home_showing:
@@ -2128,7 +2118,7 @@ class SearchWin(QtWidgets.QDialog):
             cards_text.close()
 
 
-class CreateDeckWin(QtWidgets.QWidget):
+class CreateDeckWin(QtWidgets.QDialog):
     def __init__(self, refresher):
         super().__init__()
         self.refresher = refresher
