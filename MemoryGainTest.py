@@ -59,8 +59,7 @@ class MainWin:
             if "Test version 0.0.3" not in str(html.read()):
                 self.update_msg = QtWidgets.QMessageBox()
                 self.update_msg.setWindowTitle("Update")
-                self.update_msg.setText(
-                    "There is an updated version available at https://memorygain.app. Would you like to download the updated version?")
+                self.update_msg.setText("There is an updated version available at https://memorygain.app. Would you like to download the updated version?")
                 self.update_msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
                 self.update_msg.setIcon(QtWidgets.QMessageBox.Information)
                 self.update_msg.exec_()
@@ -1271,16 +1270,6 @@ class MainWin:
     def del_deck_msg_clicked(self, btn, deck):
         if btn.text() == "OK":
             self.home_showing = True
-            # Deletes add cards and search window.
-            try:
-                self.add_cards_win.close()
-            except:
-                pass
-
-            try:
-                self.search_win.close()
-            except:
-                pass
 
             decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
             decks_lines = decks_text.readlines()
