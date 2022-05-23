@@ -1606,49 +1606,7 @@ class MainWin:
         self.main_win_verticalLayout = QtWidgets.QVBoxLayout(self.main_win_scrollAreaWidgetContents)
         self.main_win_verticalLayout.setObjectName("main_win_verticalLayout")
 
-        font = QtGui.QFont()
-        font.setFamily("Verdana")
-        font.setPointSize(12)
-        decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
-        decks_lines = decks_text.readlines()
-        for idx, deck in enumerate(decks_lines):
-            self.deck_btn = QtWidgets.QPushButton(self.main_win_scrollAreaWidgetContents)
-            self.deck_btn.setMinimumSize(QtCore.QSize(282, 40))
-            self.deck_btn.setMaximumSize(QtCore.QSize(282, 40))
-            self.deck_btn.setFont(font)
-            self.deck_btn.setStyleSheet("""
-                                                        QPushButton#deck_btn{
-                                                            background-color: transparent;
-                                                            text-align: left;
-                                                            color: white;
-                                                            border-radius: 15px;
-                                                        }
-                                                        QPushButton#deck_btn:hover{
-                                                            background-color: rgba(255, 255, 255, 0.1);
-                                                        }
-                                                        QPushButton#deck_btn:pressed{
-                                                            background-color: rgba(255, 255, 255, 0.2);
-                                                        }
-                                                        """)
-            self.deck_btn.setObjectName("deck_btn")
-            self.deck_btn.setText("  " + deck.replace("\n", ""))
-            self.main_win_verticalLayout.addWidget(self.deck_btn)
-
-            # This has to be done as the deck button cannot be assigned the 'idx' variable directly as this will make it
-            # such that the argument of all buttons will be the last value of 'idx', i.e. if you write
-            # 'self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(idx))' all buttons will have the final value of 'idx'.
-            func = partial(self.deck_btn_clicked, idx)
-            self.deck_btn.clicked.connect(func)
-
-        decks_text.close()
-
-        main_win_spacer2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.main_win_verticalLayout.addItem(main_win_spacer2)
-        self.main_win_scrollArea.setWidget(self.main_win_scrollAreaWidgetContents)
-        self.main_win_gridLayout.addWidget(self.main_win_scrollArea, 2, 1, 1, 1)
-        self.create_deck_btn.raise_()
-        self.main_win_scrollArea.raise_()
-        self.main_win.setCentralWidget(self.main_win_centralwidget)
+        self.deck_refresher()
 
         self.main_win.setWindowTitle("Memory Gain")
         self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
