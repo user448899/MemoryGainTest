@@ -26,11 +26,13 @@ import os
 from functools import partial
 
 
-class MainWin:
+class MainWin(QtWidgets.QMainWindow):
     def __init__(self):
+        super().__init__()
         self.temp_path = tempfile.gettempdir()
+        self.setup_ui()
 
-    def setupUi(self):
+    def setup_ui(self):
         # self.home_showing is used by self.deck_refresher() to decide whether or not to re-draw the main_win scroll area
         # to show newly created decks.
         self.home_showing = True
@@ -73,8 +75,6 @@ class MainWin:
         if going_to_update:
             sys.exit()
 
-        # Main window.
-        self.main_win = QtWidgets.QMainWindow()
         # Finds how many are due today.
         cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
         cards_parts = re.split("DUE\^\^\$=|INTERVAL\^\^\$=", cards_text.read())
@@ -87,21 +87,20 @@ class MainWin:
             if idx % 2 == 0 and datetime.datetime.strptime(part, "%Y-%m-%d %H:%M:%S.%f") <= end_of_today:
                 num_to_study += 1
 
-        self.main_win.setObjectName("main_win")
-        self.main_win.resize(750, 600)
-        self.main_win.setMinimumSize(QtCore.QSize(700, 400))
-        self.main_win.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        self.main_win.setStyleSheet("""
-                                QMainWindow#main_win{
-                                    background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(30, 10, 30, 255), stop:1 rgba(60, 10, 60, 255));
-                                }
-                                QScrollBar{
-                                    background: transparent;
-                                    width: 10px;
-                                }
-                                """)
-
-        self.main_win_centralwidget = QtWidgets.QWidget(self.main_win)
+        self.setObjectName("main_win")
+        self.resize(750, 600)
+        self.setMinimumSize(QtCore.QSize(700, 400))
+        self.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.setStyleSheet("""
+                            QMainWindow#main_win{
+                                background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(30, 10, 30, 255), stop:1 rgba(60, 10, 60, 255));
+                            }
+                            QScrollBar{
+                                background: transparent;
+                                width: 10px;
+                            }
+                            """)
+        self.main_win_centralwidget = QtWidgets.QWidget(self)
         self.main_win_centralwidget.setObjectName("main_win_centralwidget")
         self.main_win_gridLayout = QtWidgets.QGridLayout(self.main_win_centralwidget)
         self.main_win_gridLayout.setObjectName("main_win_gridLayout")
@@ -171,7 +170,7 @@ class MainWin:
         self.main_win_scrollArea.setMinimumSize(QtCore.QSize(310, 16777215))
         self.main_win_scrollArea.setMaximumSize(QtCore.QSize(310, 16777215))
         self.main_win_scrollArea.setWidgetResizable(True)
-        self.main_win_scrollArea.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
+        self.main_win_scrollArea.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
         self.main_win_scrollArea.setObjectName("main_win_scrollArea")
         self.main_win_scrollArea.setStyleSheet("""
                                                 background-color: transparent;
@@ -223,12 +222,10 @@ class MainWin:
         self.main_win_verticalLayout.addItem(main_win_spacer2)
         self.main_win_scrollArea.setWidget(self.main_win_scrollAreaWidgetContents)
         self.main_win_gridLayout.addWidget(self.main_win_scrollArea, 2, 1, 1, 1)
-        self.main_win.setCentralWidget(self.main_win_centralwidget)
+        self.setCentralWidget(self.main_win_centralwidget)
 
-        self.main_win.setWindowTitle("Memory Gain")
-        self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
-
-        self.main_win.show()
+        self.setWindowTitle("Memory Gain")
+        self.setWindowIcon(QtGui.QIcon("icon.ico"))
 
     def study_btn_clicked(self):
         self.home_showing = False
@@ -249,7 +246,7 @@ class MainWin:
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.study_upper_horizontalLayout.addItem(spacerItem)
 
-        self.study_home_btn = QtWidgets.QPushButton(self.main_win)
+        self.study_home_btn = QtWidgets.QPushButton(self)
         self.study_home_btn.setMinimumSize(QtCore.QSize(300, 40))
         self.study_home_btn.setMaximumSize(QtCore.QSize(300, 40))
         font = QtGui.QFont()
@@ -273,7 +270,7 @@ class MainWin:
         self.study_upper_horizontalLayout.addWidget(self.study_home_btn)
         self.study_home_btn.clicked.connect(lambda: self.study_home_btn_clicked())
 
-        self.study_edit_btn = QtWidgets.QPushButton(self.main_win)
+        self.study_edit_btn = QtWidgets.QPushButton(self)
         self.study_edit_btn.setMinimumSize(QtCore.QSize(300, 40))
         self.study_edit_btn.setMaximumSize(QtCore.QSize(300, 40))
         font = QtGui.QFont()
@@ -304,7 +301,7 @@ class MainWin:
         self.study_gridLayout.addLayout(self.study_upper_horizontalLayout, 0, 0, 1, 1)
         self.study_labels_verticalLayout = QtWidgets.QVBoxLayout()
         self.study_labels_verticalLayout.setObjectName("study_labels_verticalLayout")
-        self.study_qst_label = QtWidgets.QLabel(self.main_win)
+        self.study_qst_label = QtWidgets.QLabel(self)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -326,7 +323,7 @@ class MainWin:
         else:
             self.study_qst_label.setText(self.got_card[1])
 
-        self.study_line = QtWidgets.QFrame(self.main_win)
+        self.study_line = QtWidgets.QFrame(self)
         self.study_line.setFrameShape(QtWidgets.QFrame.HLine)
         self.study_line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.study_line.setObjectName("study_line")
@@ -335,7 +332,7 @@ class MainWin:
 
         self.study_labels_verticalLayout.addWidget(self.study_line)
 
-        self.study_ans_label = QtWidgets.QLabel(self.main_win)
+        self.study_ans_label = QtWidgets.QLabel(self)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -359,7 +356,7 @@ class MainWin:
         spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.study_lower_horizontalLayout.addItem(spacerItem2)
 
-        self.again_btn = QtWidgets.QPushButton(self.main_win)
+        self.again_btn = QtWidgets.QPushButton(self)
         self.again_btn.setMinimumSize(QtCore.QSize(300, 40))
         self.again_btn.setMaximumSize(QtCore.QSize(300, 40))
         font = QtGui.QFont()
@@ -384,7 +381,7 @@ class MainWin:
         self.again_btn.clicked.connect(lambda: self.again_btn_clicked())
         self.again_btn.hide()
 
-        self.show_ans_btn = QtWidgets.QPushButton(self.main_win)
+        self.show_ans_btn = QtWidgets.QPushButton(self)
         self.show_ans_btn.setMinimumSize(QtCore.QSize(300, 40))
         self.show_ans_btn.setMaximumSize(QtCore.QSize(300, 40))
         font = QtGui.QFont()
@@ -410,7 +407,7 @@ class MainWin:
         if not self.got_card:
             self.show_ans_btn.hide()
 
-        self.correct_btn = QtWidgets.QPushButton(self.main_win)
+        self.correct_btn = QtWidgets.QPushButton(self)
         self.correct_btn.setMinimumSize(QtCore.QSize(300, 40))
         self.correct_btn.setMaximumSize(QtCore.QSize(300, 40))
         font = QtGui.QFont()
@@ -439,14 +436,14 @@ class MainWin:
         self.study_lower_horizontalLayout.addItem(spacerItem3)
         self.study_gridLayout.addLayout(self.study_lower_horizontalLayout, 2, 0, 1, 1)
 
-        self.main_win.setWindowTitle("Memory Gain - Study")
+        self.setWindowTitle("Memory Gain - Study")
         self.study_home_btn.setText("Home")
         self.study_edit_btn.setText("Edit")
         self.again_btn.setText("Again")
         self.show_ans_btn.setText("Answer")
         self.correct_btn.setText("Correct")
 
-        self.main_win.setCentralWidget(self.study_centralwidget)
+        self.setCentralWidget(self.study_centralwidget)
 
     def study_edit_btn_clicked(self):
         self.study_centralwidget.deleteLater()
@@ -611,14 +608,14 @@ class MainWin:
 
         self.edit_win_gridLayout.addLayout(self.edit_win_horizontalLayout, 1, 0, 1, 1)
 
-        self.main_win.setWindowTitle("Memory Gain - Study - Edit")
+        self.setWindowTitle("Memory Gain - Study - Edit")
         self.edit_qst_label.setText("Question:")
         self.edit_ans_label.setText("Answer:")
         self.edit_save_btn.setText("Save")
         self.edit_del_btn.setText("Delete")
         self.edit_back_btn.setText("Cancel")
 
-        self.main_win.setCentralWidget(self.edit_centralwidget)
+        self.setCentralWidget(self.edit_centralwidget)
 
     def edit_del_btn_clicked(self):
         cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
@@ -721,19 +718,18 @@ class MainWin:
             if (idx % 2 == 0) and (datetime.datetime.strptime(part, "%Y-%m-%d %H:%M:%S.%f") <= end_of_today):
                 num_to_study += 1
 
-        self.main_win.setMinimumSize(QtCore.QSize(700, 400))
-        self.main_win.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        self.main_win.setStyleSheet("""
-                                        QMainWindow#main_win{
-                                            background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(30, 10, 30, 255), stop:1 rgba(60, 10, 60, 255));
-                                        }
-                                        QScrollBar{
-                                            background: transparent;
-                                            width: 10px;
-                                        }
-                                        """)
-
-        self.main_win_centralwidget = QtWidgets.QWidget(self.main_win)
+        self.setMinimumSize(QtCore.QSize(700, 400))
+        self.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.setStyleSheet("""
+                            QMainWindow#main_win{
+                                background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(30, 10, 30, 255), stop:1 rgba(60, 10, 60, 255));
+                            }
+                            QScrollBar{
+                                background: transparent;
+                                width: 10px;
+                            }
+                            """)
+        self.main_win_centralwidget = QtWidgets.QWidget(self)
         # Shown at end (stop screen updating).
         self.main_win_centralwidget.hide()
         self.main_win_centralwidget.setObjectName("main_win_centralwidget")
@@ -859,8 +855,8 @@ class MainWin:
         self.main_win_gridLayout.addWidget(self.main_win_scrollArea, 2, 1, 1, 1)
         self.create_deck_btn.raise_()
         self.main_win_scrollArea.raise_()
-        self.main_win.setCentralWidget(self.main_win_centralwidget)
-        self.main_win.setWindowTitle("Memory Gain")
+        self.setCentralWidget(self.main_win_centralwidget)
+        self.setWindowTitle("Memory Gain")
         self.main_win_centralwidget.show()
 
     def show_ans_btn_clicked(self):
@@ -1249,14 +1245,14 @@ class MainWin:
 
         self.main_win_gridLayout.addLayout(self.deck_win_verticalLayout, 1, 1, 1, 1)
 
-        self.main_win.setWindowTitle(f"{deck} deck")
+        self.setWindowTitle(f"{deck} deck")
         self.deck_label.setText(f"{deck}")
         self.add_cards_btn.setText("Add cards")
         self.search_deck_btn.setText("Search")
         self.del_deck_btn.setText("Delete")
         self.back_decks_btn.setText("Home")
 
-        self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
+        self.setWindowIcon(QtGui.QIcon("icon.ico"))
 
     def del_deck_btn_clicked(self, deck):
         self.msg = QtWidgets.QMessageBox()
@@ -1328,7 +1324,7 @@ class MainWin:
                 if idx % 2 == 0 and datetime.datetime.strptime(part, "%Y-%m-%d %H:%M:%S.%f") <= end_of_today:
                     num_to_study += 1
 
-            self.main_win_centralwidget = QtWidgets.QWidget(self.main_win)
+            self.main_win_centralwidget = QtWidgets.QWidget(self)
             self.main_win_centralwidget.setObjectName("main_win_centralwidget")
             self.main_win_gridLayout = QtWidgets.QGridLayout(self.main_win_centralwidget)
             self.main_win_gridLayout.setObjectName("main_win_gridLayout")
@@ -1455,10 +1451,10 @@ class MainWin:
             self.main_win_gridLayout.addWidget(self.main_win_scrollArea, 2, 1, 1, 1)
             self.create_deck_btn.raise_()
             self.main_win_scrollArea.raise_()
-            self.main_win.setCentralWidget(self.main_win_centralwidget)
+            self.setCentralWidget(self.main_win_centralwidget)
 
-            self.main_win.setWindowTitle("Memory Gain")
-            self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
+            self.setWindowTitle("Memory Gain")
+            self.setWindowIcon(QtGui.QIcon("icon.ico"))
 
     def search_deck_btn_clicked(self, deck):
         self.deck_label.setText("Please finish searching the deck.")
@@ -1521,7 +1517,7 @@ class MainWin:
             if idx % 2 == 0 and datetime.datetime.strptime(part, "%Y-%m-%d %H:%M:%S.%f") <= end_of_today:
                 num_to_study += 1
 
-        self.main_win_centralwidget = QtWidgets.QWidget(self.main_win)
+        self.main_win_centralwidget = QtWidgets.QWidget(self)
         self.main_win_centralwidget.setObjectName("main_win_centralwidget")
         self.main_win_gridLayout = QtWidgets.QGridLayout(self.main_win_centralwidget)
         self.main_win_gridLayout.setObjectName("main_win_gridLayout")
@@ -1605,8 +1601,8 @@ class MainWin:
 
         self.deck_refresher()
 
-        self.main_win.setWindowTitle("Memory Gain")
-        self.main_win.setWindowIcon(QtGui.QIcon("icon.ico"))
+        self.setWindowTitle("Memory Gain")
+        self.setWindowIcon(QtGui.QIcon("icon.ico"))
 
     def create_deck_btn_clicked(self):
         # self.deck_refresher is passed in as a reference.
@@ -1661,7 +1657,7 @@ class MainWin:
             self.main_win_verticalLayout.addItem(main_win_spacer2)
             self.main_win_scrollArea.setWidget(self.main_win_scrollAreaWidgetContents)
             self.main_win_gridLayout.addWidget(self.main_win_scrollArea, 3, 1, 1, 1)
-            self.main_win.setCentralWidget(self.main_win_centralwidget)
+            self.setCentralWidget(self.main_win_centralwidget)
 
 
 class SearchWin(QtWidgets.QDialog):
@@ -2408,7 +2404,7 @@ class AddCardsWin(QtWidgets.QDialog):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    main_win = MainWin()
-    main_win.setupUi()
+    mw = MainWin()
+    mw.show()
     sys.exit(app.exec_())
 
