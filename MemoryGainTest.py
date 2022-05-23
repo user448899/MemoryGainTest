@@ -1484,156 +1484,8 @@ class MainWin:
                 break
 
     def add_cards_btn_clicked(self, deck):
-        self.add_cards_win = QtWidgets.QWidget()
-        self.add_cards_win.setObjectName("add_cards_win")
-        self.add_cards_win.resize(700, 500)
-        self.add_cards_win.setStyleSheet("""
-                                        QWidget#add_cards_win{
-                                            background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(40, 10, 40, 255), stop:1 rgba(20, 0, 20, 255));;
-                                        }
-                                        QScrollBar{
-                                           background: transparent;
-                                           width: 10px;
-                                        }
-                                        """)
-        self.add_cards_gridLayout = QtWidgets.QGridLayout(self.add_cards_win)
-        self.add_cards_gridLayout.setObjectName("add_cards_gridLayout")
-        self.add_cards_verticalLayout = QtWidgets.QVBoxLayout()
-        self.add_cards_verticalLayout.setObjectName("add_cards_verticalLayout")
-        self.qst_label = QtWidgets.QLabel(self.add_cards_win)
-        font = QtGui.QFont("Verdana")
-        font.setPointSize(12)
-        self.qst_label.setFont(font)
-        self.qst_label.setStyleSheet("""
-                                    color: white;
-                                    """)
-        self.qst_label.setObjectName("qst_label")
-        self.add_cards_verticalLayout.addWidget(self.qst_label)
-
-        self.input_qst = QtWidgets.QTextEdit(self.add_cards_win)
-        font = QtGui.QFont("Verdana")
-        font.setPointSize(12)
-        self.input_qst.setFont(font)
-        self.input_qst.setStyleSheet("""
-                                    background-color: rgba(255, 255, 255, 0.1);
-                                    border-radius:10px;
-                                    padding: 5px;
-                                    color: white;
-                                    """)
-        self.input_qst.setObjectName("input_qst")
-        self.add_cards_verticalLayout.addWidget(self.input_qst)
-
-        self.ans_label = QtWidgets.QLabel(self.add_cards_win)
-        font = QtGui.QFont("Verdana")
-        font.setPointSize(12)
-        self.ans_label.setFont(font)
-        self.ans_label.setStyleSheet("color:white;")
-        self.ans_label.setObjectName("ans_label")
-        self.add_cards_verticalLayout.addWidget(self.ans_label)
-
-        self.input_ans = QtWidgets.QTextEdit(self.add_cards_win)
-        font = QtGui.QFont("Verdana")
-        font.setPointSize(12)
-        self.input_ans.setFont(font)
-        self.input_ans.setStyleSheet("""
-                                    background-color: rgba(255, 255, 255, 0.1);
-                                    border-radius:10px;
-                                    padding: 5px;
-                                    color: white;
-                                    """)
-        self.input_ans.setObjectName("input_ans")
-        self.add_cards_verticalLayout.addWidget(self.input_ans)
-
-        self.add_cards_horizontalLayout = QtWidgets.QHBoxLayout()
-        self.add_cards_horizontalLayout.setObjectName("add_cards_horizontalLayout")
-
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.add_cards_horizontalLayout.addItem(spacerItem)
-
-        self.add_card_btn = QtWidgets.QPushButton(self.add_cards_win)
-        self.add_card_btn.setMinimumSize(QtCore.QSize(300, 40))
-        self.add_card_btn.setMaximumSize(QtCore.QSize(300, 40))
-        font = QtGui.QFont("Verdana")
-        font.setPointSize(12)
-        self.add_card_btn.setFont(font)
-        self.add_card_btn.setStyleSheet("""
-                                        QPushButton#add_card_btn{
-                                            background-color: transparent;
-                                            text-align: left;
-                                            color: white;
-                                            border-radius: 15px;
-                                            border: 1px solid white;
-                                            text-align: center;
-                                        }
-                                        QPushButton#add_card_btn:hover{
-                                            background-color: rgba(255, 255, 255, 0.1);
-                                        }
-                                        QPushButton#add_card_btn:pressed{
-                                            background-color: rgba(255, 255, 255, 0.2);
-                                        }
-                                        """)
-        self.add_card_btn.setObjectName("add_card_btn")
-        self.add_cards_horizontalLayout.addWidget(self.add_card_btn)
-        self.add_card_btn.clicked.connect(lambda: self.add_card_btn_clicked(deck))
-
-        self.add_cards_verticalLayout.addLayout(self.add_cards_horizontalLayout)
-        self.add_cards_gridLayout.addLayout(self.add_cards_verticalLayout, 1, 1, 1, 1)
-
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.add_cards_horizontalLayout.addItem(spacerItem1)
-
-        self.add_cards_win.setWindowTitle("Add cards")
-        self.qst_label.setText("Question:")
-        self.ans_label.setText("Answer:")
-        self.add_card_btn.setText("Add")
+        self.add_cards_win = AddCardsWin(deck)
         self.add_cards_win.show()
-
-        self.add_cards_win.setWindowIcon(QtGui.QIcon("feather_601060\\plus-square.svg"))
-
-    def add_card_btn_clicked(self, deck):
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        cards = cards_text.read().split("QUESTION^^$=")
-        cards.pop(0)
-        qsts = []
-        for card in cards:
-            qsts.append(card.split("ANSWER^^$=")[0])
-        cards_text.close()
-        if self.input_qst.toPlainText().strip() == "":
-            msg = QtWidgets.QMessageBox()
-            msg.setWindowTitle("Invalid")
-            center = QDesktopWidget().availableGeometry().center()
-            msg.move(center)
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText("Please enter a question")
-            msg.exec_()
-        elif self.input_qst.toPlainText().strip() in qsts:
-            msg = QtWidgets.QMessageBox()
-            msg.setWindowTitle("Duplicate")
-            center = QDesktopWidget().availableGeometry().center()
-            msg.move(center)
-            msg.setIcon(QtWidgets.QMessageBox.Information)
-            msg.setText("That question already exists. Card not added.")
-            msg.exec_()
-        elif "DECK^^$=" in self.input_qst.toPlainText() or "QUESTION^^$=" in self.input_qst.toPlainText() or "ANSWER^^$" in self.input_qst.toPlainText() or "EASE^^$" in self.input_qst.toPlainText() or "DUE^^$=" in self.input_qst.toPlainText() or "INTERVAL^^$=" in self.input_qst.toPlainText() or "PHASE^^$=" in self.input_qst.toPlainText() or "DECK^^$=" in self.input_ans.toPlainText() or "QUESTION^^$=" in self.input_ans.toPlainText() or "ANSWER^^$" in self.input_ans.toPlainText() or "EASE^^$" in self.input_ans.toPlainText() or "DUE^^$=" in self.input_ans.toPlainText() or "INTERVAL^^$=" in self.input_ans.toPlainText() or "PHASE^^$=" in self.input_ans.toPlainText():
-            msg = QtWidgets.QMessageBox()
-            msg.setWindowTitle("Invalid")
-            center = QDesktopWidget().availableGeometry().center()
-            msg.move(center)
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText("Due to the way items are stored, strings cannot contain\n\"DECK^^$=\", \"QUESTION^^$=\", \"ANSWER^^$=\", \"EASE^^$=\"\n\"DUE^^$=\", \"INTERVAL^^$=\", or \"PHASE^^$=\".")
-            msg.exec_()
-        else:
-            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "a")
-            cards_text.write(f"DECK^^$={deck}QUESTION^^$={self.input_qst.toPlainText()}ANSWER^^$={self.input_ans.toPlainText()}EASE^^$=2.5DUE^^$={datetime.datetime.now()}INTERVAL^^$=0PHASE^^$=L\n")
-            self.input_qst.clear()
-            self.input_ans.clear()
-            cards_text.close()
-
-            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-            cards_text.close()
-
-    def cancel_card_btn_clicked(self):
-        self.add_cards_win.close()
 
     def back_decks_btn_clicked(self):
         self.home_showing = True
@@ -2441,6 +2293,161 @@ class CreateDeckWin(QtWidgets.QWidget):
 
     def create_cancel_btn_clicked(self):
         self.close()
+
+
+class AddCardsWin(QtWidgets.QWidget):
+    def __init__(self, deck):
+        super().__init__()
+        self.deck = deck
+        self.temp_path = tempfile.gettempdir()
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.setObjectName("add_cards_win")
+        self.resize(700, 500)
+        self.setStyleSheet("""
+                            QWidget#add_cards_win{
+                                background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(40, 10, 40, 255), stop:1 rgba(20, 0, 20, 255));;
+                            }
+                            QScrollBar{
+                               background: transparent;
+                               width: 10px;
+                            }
+                            """)
+        self.add_cards_gridLayout = QtWidgets.QGridLayout(self)
+        self.add_cards_gridLayout.setObjectName("add_cards_gridLayout")
+        self.add_cards_verticalLayout = QtWidgets.QVBoxLayout()
+        self.add_cards_verticalLayout.setObjectName("add_cards_verticalLayout")
+        self.qst_label = QtWidgets.QLabel(self)
+        font = QtGui.QFont("Verdana")
+        font.setPointSize(12)
+        self.qst_label.setFont(font)
+        self.qst_label.setStyleSheet("""
+                                            color: white;
+                                            """)
+        self.qst_label.setObjectName("qst_label")
+        self.add_cards_verticalLayout.addWidget(self.qst_label)
+
+        self.input_qst = QtWidgets.QTextEdit(self)
+        font = QtGui.QFont("Verdana")
+        font.setPointSize(12)
+        self.input_qst.setFont(font)
+        self.input_qst.setStyleSheet("""
+                                            background-color: rgba(255, 255, 255, 0.1);
+                                            border-radius:10px;
+                                            padding: 5px;
+                                            color: white;
+                                            """)
+        self.input_qst.setObjectName("input_qst")
+        self.add_cards_verticalLayout.addWidget(self.input_qst)
+
+        self.ans_label = QtWidgets.QLabel(self)
+        font = QtGui.QFont("Verdana")
+        font.setPointSize(12)
+        self.ans_label.setFont(font)
+        self.ans_label.setStyleSheet("color:white;")
+        self.ans_label.setObjectName("ans_label")
+        self.add_cards_verticalLayout.addWidget(self.ans_label)
+
+        self.input_ans = QtWidgets.QTextEdit(self)
+        font = QtGui.QFont("Verdana")
+        font.setPointSize(12)
+        self.input_ans.setFont(font)
+        self.input_ans.setStyleSheet("""
+                                            background-color: rgba(255, 255, 255, 0.1);
+                                            border-radius:10px;
+                                            padding: 5px;
+                                            color: white;
+                                            """)
+        self.input_ans.setObjectName("input_ans")
+        self.add_cards_verticalLayout.addWidget(self.input_ans)
+
+        self.add_cards_horizontalLayout = QtWidgets.QHBoxLayout()
+        self.add_cards_horizontalLayout.setObjectName("add_cards_horizontalLayout")
+
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.add_cards_horizontalLayout.addItem(spacerItem)
+
+        self.add_card_btn = QtWidgets.QPushButton(self)
+        self.add_card_btn.setMinimumSize(QtCore.QSize(300, 40))
+        self.add_card_btn.setMaximumSize(QtCore.QSize(300, 40))
+        font = QtGui.QFont("Verdana")
+        font.setPointSize(12)
+        self.add_card_btn.setFont(font)
+        self.add_card_btn.setStyleSheet("""
+                                                QPushButton#add_card_btn{
+                                                    background-color: transparent;
+                                                    text-align: left;
+                                                    color: white;
+                                                    border-radius: 15px;
+                                                    border: 1px solid white;
+                                                    text-align: center;
+                                                }
+                                                QPushButton#add_card_btn:hover{
+                                                    background-color: rgba(255, 255, 255, 0.1);
+                                                }
+                                                QPushButton#add_card_btn:pressed{
+                                                    background-color: rgba(255, 255, 255, 0.2);
+                                                }
+                                                """)
+        self.add_card_btn.setObjectName("add_card_btn")
+        self.add_cards_horizontalLayout.addWidget(self.add_card_btn)
+        self.add_card_btn.clicked.connect(lambda: self.add_card_btn_clicked())
+
+        self.add_cards_verticalLayout.addLayout(self.add_cards_horizontalLayout)
+        self.add_cards_gridLayout.addLayout(self.add_cards_verticalLayout, 1, 1, 1, 1)
+
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.add_cards_horizontalLayout.addItem(spacerItem1)
+
+        self.setWindowTitle("Add cards")
+        self.qst_label.setText("Question:")
+        self.ans_label.setText("Answer:")
+        self.add_card_btn.setText("Add")
+
+        self.setWindowIcon(QtGui.QIcon("feather_601060\\plus-square.svg"))
+
+    def add_card_btn_clicked(self):
+        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
+        cards = cards_text.read().split("QUESTION^^$=")
+        cards.pop(0)
+        qsts = []
+        for card in cards:
+            qsts.append(card.split("ANSWER^^$=")[0])
+        cards_text.close()
+        if self.input_qst.toPlainText().strip() == "":
+            msg = QtWidgets.QMessageBox()
+            msg.setWindowTitle("Invalid")
+            center = QDesktopWidget().availableGeometry().center()
+            msg.move(center)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setText("Please enter a question")
+            msg.exec_()
+        elif self.input_qst.toPlainText().strip() in qsts:
+            msg = QtWidgets.QMessageBox()
+            msg.setWindowTitle("Duplicate")
+            center = QDesktopWidget().availableGeometry().center()
+            msg.move(center)
+            msg.setIcon(QtWidgets.QMessageBox.Information)
+            msg.setText("That question already exists. Card not added.")
+            msg.exec_()
+        elif "DECK^^$=" in self.input_qst.toPlainText() or "QUESTION^^$=" in self.input_qst.toPlainText() or "ANSWER^^$" in self.input_qst.toPlainText() or "EASE^^$" in self.input_qst.toPlainText() or "DUE^^$=" in self.input_qst.toPlainText() or "INTERVAL^^$=" in self.input_qst.toPlainText() or "PHASE^^$=" in self.input_qst.toPlainText() or "DECK^^$=" in self.input_ans.toPlainText() or "QUESTION^^$=" in self.input_ans.toPlainText() or "ANSWER^^$" in self.input_ans.toPlainText() or "EASE^^$" in self.input_ans.toPlainText() or "DUE^^$=" in self.input_ans.toPlainText() or "INTERVAL^^$=" in self.input_ans.toPlainText() or "PHASE^^$=" in self.input_ans.toPlainText():
+            msg = QtWidgets.QMessageBox()
+            msg.setWindowTitle("Invalid")
+            center = QDesktopWidget().availableGeometry().center()
+            msg.move(center)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setText("Due to the way items are stored, strings cannot contain\n\"DECK^^$=\", \"QUESTION^^$=\", \"ANSWER^^$=\", \"EASE^^$=\"\n\"DUE^^$=\", \"INTERVAL^^$=\", or \"PHASE^^$=\".")
+            msg.exec_()
+        else:
+            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "a")
+            cards_text.write(f"DECK^^$={self.deck}QUESTION^^$={self.input_qst.toPlainText()}ANSWER^^$={self.input_ans.toPlainText()}EASE^^$=2.5DUE^^$={datetime.datetime.now()}INTERVAL^^$=0PHASE^^$=L\n")
+            self.input_qst.clear()
+            self.input_ans.clear()
+            cards_text.close()
+
+            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
+            cards_text.close()
 
 
 if __name__ == "__main__":
