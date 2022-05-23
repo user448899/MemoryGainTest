@@ -67,8 +67,11 @@ class MainWin:
                     going_to_update = True
                     os.system("START https://memorygain.app")
 
-        except:
-            pass
+        except urllib.error.URLError as e:
+            print(e)
+
+        except urllib.error.HTTPError as e:
+            print(e)
 
         if going_to_update:
             sys.exit()
