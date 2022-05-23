@@ -46,10 +46,10 @@ class MainWin(QtWidgets.QMainWindow):
             os.system(f"md {self.temp_path}\\..\\MemoryGain")
 
         if not cards_on_device:
-            os.system(f"null > {self.temp_path}\\..\\MemoryGain\\cards.txt")
+            os.system(f"n > {self.temp_path}\\..\\MemoryGain\\cards.txt")
 
         if not decks_on_device:
-            os.system(f"null > {self.temp_path}\\..\\MemoryGain\\decks.txt")
+            os.system(f"n > {self.temp_path}\\..\\MemoryGain\\decks.txt")
 
         # Update checker.
         going_to_update = False
