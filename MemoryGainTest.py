@@ -52,10 +52,9 @@ class MainWin(QtWidgets.QMainWindow):
             os.system(f"n > {self.temp_path}\\..\\MemoryGain\\decks.txt")
 
         # Update checker.
-        going_to_update = False
         try:
             html = urllib.request.urlopen("https://memorygain.app")
-            if "Test version 0.0.3" not in str(html.read()):
+            if "Test version 0.0.4" not in str(html.read()):
                 self.update_msg = QtWidgets.QMessageBox()
                 self.update_msg.setWindowTitle("Update")
                 self.update_msg.setText("There is an updated version available at https://memorygain.app. Would you like to download the updated version?")
@@ -63,17 +62,14 @@ class MainWin(QtWidgets.QMainWindow):
                 self.update_msg.setIcon(QtWidgets.QMessageBox.Information)
                 self.update_msg.exec_()
                 if self.update_msg.clickedButton().text() == "&Yes":
-                    going_to_update = True
                     os.system("START https://memorygain.app")
+                    sys.exit()
 
         except urllib.error.URLError as e:
             print(e)
 
         except urllib.error.HTTPError as e:
             print(e)
-
-        if going_to_update:
-            sys.exit()
 
         # Finds how many are due today.
         cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
