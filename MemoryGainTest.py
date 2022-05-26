@@ -37,20 +37,6 @@ class MainWin(QtWidgets.QMainWindow):
         # to show newly created decks.
         self.home_showing = True
 
-        # File and directory checker.
-        memorygaindir_on_device = os.path.exists(f"{self.temp_path}\\..\\MemoryGain")
-        cards_on_device = os.path.exists(f"{self.temp_path}\\..\\MemoryGain\\cards.txt")
-        decks_on_device = os.path.exists(f"{self.temp_path}\\..\\MemoryGain\\decks.txt")
-
-        if not memorygaindir_on_device:
-            os.system(f"md {self.temp_path}\\..\\MemoryGain")
-
-        if not cards_on_device:
-            os.system(f"n > {self.temp_path}\\..\\MemoryGain\\cards.txt")
-
-        if not decks_on_device:
-            os.system(f"n > {self.temp_path}\\..\\MemoryGain\\decks.txt")
-
         # Update checker.
         try:
             html = urllib.request.urlopen("https://memorygain.app")
@@ -2399,6 +2385,21 @@ class AddCardsWin(QtWidgets.QDialog):
 
 
 if __name__ == "__main__":
+    temp_path = tempfile.gettempdir()
+    # File and directory checker.
+    memorygaindir_on_device = os.path.exists(f"{temp_path}\\..\\MemoryGain")
+    cards_on_device = os.path.exists(f"{temp_path}\\..\\MemoryGain\\cards.txt")
+    decks_on_device = os.path.exists(f"{temp_path}\\..\\MemoryGain\\decks.txt")
+
+    if not memorygaindir_on_device:
+        os.system(f"md {temp_path}\\..\\MemoryGain")
+
+    if not cards_on_device:
+        os.system(f"n > {temp_path}\\..\\MemoryGain\\cards.txt")
+
+    if not decks_on_device:
+        os.system(f"n > {temp_path}\\..\\MemoryGain\\decks.txt")
+
     app = QtWidgets.QApplication(sys.argv)
     mw = MainWin()
     mw.show()
