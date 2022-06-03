@@ -377,7 +377,7 @@ def add_card(deck, qst, ans):
     Appends a card to cards.txt.
     """
     cards_text = open(f"{temp_path}\\..\\MemoryGain\\cards.txt", "a")
-    cards_text.write(f"DECK^^$={deck}QUESTION^^$={qst}ANSWER^^$={ans}EASE^^$=2.5DUE^^$={datetime.datetime.now()}INTERVAL^^$=0PHASE^^$=L\n")
+    cards_text.write(f"DECK^^$={deck}QUESTION^^$={qst}ANSWER^^$={ans}EASE^^$=2.3DUE^^$={datetime.datetime.now()}INTERVAL^^$=0PHASE^^$=L\n")
     cards_text.close()
 
 
