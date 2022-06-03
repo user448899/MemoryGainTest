@@ -298,6 +298,11 @@ def search_query_exists(query):
 
 
 def search_for_cards(deck, query, search_upto):
+    """
+    Searches cards.txt for cards that contain the query in either the question or answer. After finding all the cards
+    with the query it returns the question and answer of the one at index [search_upto], it also returns the number
+    of cards with the query.
+    """
     qst = ""
     ans = ""
 
@@ -332,16 +337,25 @@ def search_for_cards(deck, query, search_upto):
 
 
 def del_searched_card(deck, query, search_upto):
+    """
+    Finds the card the user is currently viewing and deletes it.
+    """
     qst, ans, amt_cards = search_for_cards(deck, query, search_upto)
     del_card(deck, qst)
 
 
 def save_searched_card(deck, query, search_upto, new_qst, new_ans):
+    """
+    Finds the card the user is currently viewing and saves their changes.
+    """
     qst, ans, amt_cards = search_for_cards(deck, query, search_upto)
     write_card_edit_save(deck, qst, new_qst, new_ans)
 
 
 def check_qst_exists(qst):
+    """
+    Checks if a question already exists in a card. Returns True is it does, and returns False if it does not.
+    """
     cards_text = open(f"{temp_path}\\..\\MemoryGain\\cards.txt", "r")
     cards = cards_text.read().split("QUESTION^^$=")
     cards.pop(0)
@@ -359,6 +373,9 @@ def check_qst_exists(qst):
 
 
 def add_card(deck, qst, ans):
+    """
+    Appends a card to cards.txt.
+    """
     cards_text = open(f"{temp_path}\\..\\MemoryGain\\cards.txt", "a")
     cards_text.write(f"DECK^^$={deck}QUESTION^^$={qst}ANSWER^^$={ans}EASE^^$=2.5DUE^^$={datetime.datetime.now()}INTERVAL^^$=0PHASE^^$=L\n")
     cards_text.close()
