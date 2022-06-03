@@ -18,6 +18,9 @@ def get_deck_lines():
 
 
 def get_deck_name(i):
+    """
+    Returns the name of a deck on line [i] in decks.txt (starting at 0).
+    """
     with open(f"{temp_path}\\..\\MemoryGain\\decks.txt", "r") as decks_text:
         return decks_text.readlines()[i].replace("\n", "")
 
@@ -65,6 +68,9 @@ def del_deck(deck):
 
 
 def add_deck(deck):
+    """
+    Inserts a deck into decks.txt, in alphabetical order.
+    """
     decks_text = open(f"{temp_path}\\..\\MemoryGain\\decks.txt", "a")
     decks_text.write(deck + "\n")
     decks_text.close()
