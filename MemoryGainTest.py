@@ -24,6 +24,8 @@ import tempfile
 import urllib.request
 import os
 from functools import partial
+import cards
+import decks
 
 
 class MainWin(QtWidgets.QMainWindow):
@@ -58,16 +60,7 @@ class MainWin(QtWidgets.QMainWindow):
             print(e)
 
         # Finds how many are due today.
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        cards_parts = re.split("DUE\^\^\$=|INTERVAL\^\^\$=", cards_text.read())
-        cards_text.close()
-        cards_parts.pop(0)
-        num_to_study = 0
-        today = str(datetime.datetime.now())
-        end_of_today = datetime.datetime(int(today[:4]), int(today[5:7]), int(today[8:10]), 23, 59, 59, 999999)
-        for idx, part in enumerate(cards_parts):
-            if idx % 2 == 0 and datetime.datetime.strptime(part, "%Y-%m-%d %H:%M:%S.%f") <= end_of_today:
-                num_to_study += 1
+        num_to_study = cards.get_num_to_study()
 
         self.setObjectName("main_win")
         self.resize(750, 600)
@@ -167,9 +160,8 @@ class MainWin(QtWidgets.QMainWindow):
         font = QtGui.QFont()
         font.setFamily("Verdana")
         font.setPointSize(12)
-        decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
-        decks_lines = decks_text.readlines()
-        for idx, deck in enumerate(decks_lines):
+
+        for idx, deck in enumerate(decks.get_deck_lines()):
             self.deck_btn = QtWidgets.QPushButton(self.main_win_scrollAreaWidgetContents)
             self.deck_btn.setMinimumSize(QtCore.QSize(282, 40))
             self.deck_btn.setMaximumSize(QtCore.QSize(282, 40))
@@ -198,8 +190,6 @@ class MainWin(QtWidgets.QMainWindow):
             func = partial(self.deck_btn_clicked, idx)
             self.deck_btn.clicked.connect(func)
 
-        decks_text.close()
-
         main_win_spacer2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.main_win_verticalLayout.addItem(main_win_spacer2)
         self.main_win_scrollArea.setWidget(self.main_win_scrollAreaWidgetContents)
@@ -220,7 +210,7 @@ class MainWin(QtWidgets.QMainWindow):
         self.study_centralwidget = QtWidgets.QWidget()
         self.study_gridLayout = QtWidgets.QGridLayout(self.study_centralwidget)
 
-        self.get_card()
+        self.current_card = cards.get_card()
 
         self.study_gridLayout.setObjectName("study_gridLayout")
         self.study_upper_horizontalLayout = QtWidgets.QHBoxLayout()
@@ -274,7 +264,7 @@ class MainWin(QtWidgets.QMainWindow):
                                         """)
         self.study_edit_btn.setObjectName("study_edit_btn")
         self.study_edit_btn.clicked.connect(lambda: self.study_edit_btn_clicked())
-        if not self.got_card:
+        if not self.current_card:
             self.study_edit_btn.hide()
 
         self.study_upper_horizontalLayout.addWidget(self.study_edit_btn)
@@ -300,16 +290,16 @@ class MainWin(QtWidgets.QMainWindow):
         self.study_qst_label.setAlignment(QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
         self.study_qst_label.setObjectName("study_qst_label")
         self.study_labels_verticalLayout.addWidget(self.study_qst_label)
-        if not self.got_card:
+        if not self.current_card:
             self.study_qst_label.setText("Completed.")
         else:
-            self.study_qst_label.setText(self.got_card[1])
+            self.study_qst_label.setText(self.current_card[1])
 
         self.study_line = QtWidgets.QFrame(self)
         self.study_line.setFrameShape(QtWidgets.QFrame.HLine)
         self.study_line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.study_line.setObjectName("study_line")
-        if not self.got_card:
+        if not self.current_card:
             self.study_line.hide()
 
         self.study_labels_verticalLayout.addWidget(self.study_line)
@@ -386,7 +376,7 @@ class MainWin(QtWidgets.QMainWindow):
         self.show_ans_btn.setObjectName("show_ans_btn")
         self.study_lower_horizontalLayout.addWidget(self.show_ans_btn)
         self.show_ans_btn.clicked.connect(lambda: self.show_ans_btn_clicked())
-        if not self.got_card:
+        if not self.current_card:
             self.show_ans_btn.hide()
 
         self.correct_btn = QtWidgets.QPushButton(self)
@@ -467,7 +457,7 @@ class MainWin(QtWidgets.QMainWindow):
                                          }
                                          """)
         self.edit_qst_text.setObjectName("edit_qst_text")
-        self.edit_qst_text.setText(self.got_card[1])
+        self.edit_qst_text.setText(self.current_card[1])
         self.edit_win_verticalLayout.addWidget(self.edit_qst_text)
 
         self.edit_ans_label = QtWidgets.QLabel()
@@ -501,7 +491,7 @@ class MainWin(QtWidgets.QMainWindow):
                                         }
                                         """)
         self.edit_ans_text.setObjectName("edit_ans_text")
-        self.edit_ans_text.setText(self.got_card[2])
+        self.edit_ans_text.setText(self.current_card[2])
         self.edit_win_verticalLayout.addWidget(self.edit_ans_text)
 
         spacerItem = QtWidgets.QSpacerItem(20, 5, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
@@ -600,79 +590,23 @@ class MainWin(QtWidgets.QMainWindow):
         self.setCentralWidget(self.edit_centralwidget)
 
     def edit_del_btn_clicked(self):
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        cards_parts = re.split("DECK\^\^\$=|QUESTION\^\^\$=|ANSWER\^\^\$=|EASE\^\^\$=|DUE\^\^\$=|INTERVAL\^\^\$=|PHASE\^\^\$=", cards_text.read())
-        cards_parts.pop(0)
-        cards_text.close()
-
-        # Removes \n.
-        for i in range(len(cards_parts)):
-            if i % 7 == 6:
-                cards_parts[i] = cards_parts[i][:-1]
-
-        cards = []
-        for i in range(len(cards_parts)):
-            if i % 7 == 6:
-                store_list = [cards_parts[i - 6], cards_parts[i - 5], cards_parts[i - 4], cards_parts[i - 3], cards_parts[i - 2], cards_parts[i - 1], cards_parts[i]]
-                cards.append(store_list)
-
-        # Only has to check that the deck and question match, as there cannot be a duplicate question in a deck.
-        for idx, card in enumerate(cards):
-            if (card[0] == self.got_card[0]) and (card[1] == self.got_card[1]):
-                cards.pop(idx)
-
-        cards_to_write = []
-        for card in cards:
-            cards_to_write.append(f"DECK^^$={card[0]}QUESTION^^$={card[1]}ANSWER^^$={card[2]}EASE^^$={card[3]}DUE^^$={card[4]}INTERVAL^^$={card[5]}PHASE^^$={card[6]}\n")
-
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "w")
-        cards_text.writelines(cards_to_write)
-        cards_text.close()
+        cards.del_card(self.current_card[0], self.current_card[1])
 
         # Reverts back to the study window.
         self.edit_centralwidget.deleteLater()
         self.study_btn_clicked()
 
     def edit_save_btn_clicked(self):
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        cards_parts = re.split("DECK\^\^\$=|QUESTION\^\^\$=|ANSWER\^\^\$=|EASE\^\^\$=|DUE\^\^\$=|INTERVAL\^\^\$=|PHASE\^\^\$=", cards_text.read())
-        cards_parts.pop(0)
-        cards_text.close()
+        cards.write_card_edit_save(self.current_card[0], self.current_card[1], self.edit_qst_text.toPlainText(), self.edit_ans_text.toPlainText())
 
-        # Removes \n.
-        for i in range(len(cards_parts)):
-            if i % 7 == 6:
-                cards_parts[i] = cards_parts[i][:-1]
+        self.current_card[1] = self.edit_qst_text.toPlainText()
+        self.current_card[2] = self.edit_ans_text.toPlainText()
 
-        cards = []
-        for i in range(len(cards_parts)):
-            if i % 7 == 6:
-                store_list = [cards_parts[i - 6], cards_parts[i - 5], cards_parts[i - 4], cards_parts[i - 3], cards_parts[i - 2], cards_parts[i - 1], cards_parts[i]]
-                cards.append(store_list)
-
-        for card in cards:
-            if (card[0] == self.got_card[0]) and (card[1] == self.got_card[1]):
-                card[1] = self.edit_qst_text.toPlainText()
-                card[2] = self.edit_ans_text.toPlainText()
-                break
-
-        cards_to_write = []
-        for card in cards:
-            cards_to_write.append(
-                f"DECK^^$={card[0]}QUESTION^^$={card[1]}ANSWER^^$={card[2]}EASE^^$={card[3]}DUE^^$={card[4]}INTERVAL^^$={card[5]}PHASE^^$={card[6]}\n")
-
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "w")
-        cards_text.writelines(cards_to_write)
-        cards_text.close()
-
-        self.got_card[1] = self.edit_qst_text.toPlainText()
-        self.got_card[2] = self.edit_ans_text.toPlainText()
-
-        # As self.study_btn_clicked() will re-get self.got_card, to preserve the card they hit edit on:
-        card = self.got_card
+        # As self.study_btn_clicked() will re-get self.current_card, to preserve the card they hit edit on:
+        card = self.current_card
         self.edit_centralwidget.deleteLater()
         self.study_btn_clicked()
-        self.got_card = card
+        self.current_card = card
         self.study_qst_label.setText(self.edit_qst_text.toPlainText())
         self.study_ans_label.setText("")
         self.correct_btn.hide()
@@ -680,25 +614,16 @@ class MainWin(QtWidgets.QMainWindow):
         self.show_ans_btn.show()
 
     def edit_back_btn_clicked(self):
-        card = self.got_card
+        card = self.current_card
         self.edit_centralwidget.deleteLater()
         self.study_btn_clicked()
-        self.got_card = card
+        self.current_card = card
         self.study_qst_label.setText(card[1])
 
     def study_home_btn_clicked(self):
         self.home_showing = True
         # Finds how many are due today.
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        cards_parts = re.split("DUE\^\^\$=|INTERVAL\^\^\$=", cards_text.read())
-        cards_text.close()
-        cards_parts.pop(0)
-        num_to_study = 0
-        today = str(datetime.datetime.now())
-        end_of_today = datetime.datetime(int(today[:4]), int(today[5:7]), int(today[8:10]), 23, 59, 59, 999999)
-        for idx, part in enumerate(cards_parts):
-            if (idx % 2 == 0) and (datetime.datetime.strptime(part, "%Y-%m-%d %H:%M:%S.%f") <= end_of_today):
-                num_to_study += 1
+        num_to_study = cards.get_num_to_study()
 
         self.setMinimumSize(QtCore.QSize(700, 400))
         self.setMaximumSize(QtCore.QSize(16777215, 16777215))
@@ -798,9 +723,8 @@ class MainWin(QtWidgets.QMainWindow):
         font = QtGui.QFont()
         font.setFamily("Verdana")
         font.setPointSize(12)
-        decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
-        decks_lines = decks_text.readlines()
-        for idx, deck in enumerate(decks_lines):
+
+        for idx, deck in enumerate(decks.get_deck_lines()):
             self.deck_btn = QtWidgets.QPushButton(self.main_win_scrollAreaWidgetContents)
             self.deck_btn.setMinimumSize(QtCore.QSize(282, 40))
             self.deck_btn.setMaximumSize(QtCore.QSize(282, 40))
@@ -829,8 +753,6 @@ class MainWin(QtWidgets.QMainWindow):
             func = partial(self.deck_btn_clicked, idx)
             self.deck_btn.clicked.connect(func)
 
-        decks_text.close()
-
         main_win_spacer2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.main_win_verticalLayout.addItem(main_win_spacer2)
         self.main_win_scrollArea.setWidget(self.main_win_scrollAreaWidgetContents)
@@ -842,41 +764,37 @@ class MainWin(QtWidgets.QMainWindow):
         self.main_win_centralwidget.show()
 
     def show_ans_btn_clicked(self):
-        self.study_ans_label.setText(self.got_card[2])
+        self.study_ans_label.setText(self.current_card[2])
         self.show_ans_btn.hide()
         self.again_btn.show()
         self.correct_btn.show()
 
     def correct_btn_clicked(self):
-        if self.got_card[6] == "L":
-            self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=10))
-            self.got_card[6] = "B"
-            self.write_card_ac()
-        elif self.got_card[6] == "B":
-            self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=1440))
-            self.got_card[5] = "1440"
-            self.got_card[6] = "G"
-            self.write_card_ac()
-        elif self.got_card[6] == "G":
-            self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=int(float(self.got_card[3]) * int(self.got_card[5]))))
-            self.got_card[5] = str(int(float(self.got_card[3]) * int(self.got_card[5])))
-            self.write_card_ac()
-        elif self.got_card[6] == "l":
-            self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=10))
-            self.got_card[6] = "B"
-            self.write_card_ac()
-        elif self.got_card[6] == "b":
-            self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=10))
-            self.got_card[6] = "B"
-            self.write_card_ac()
-        elif self.got_card[6] == "g":
-            self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=10))
-            self.got_card[6] = "B"
-            self.write_card_ac()
+        if self.current_card[6] == "L":
+            self.current_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=10))
+            self.current_card[6] = "B"
+        elif self.current_card[6] == "B":
+            self.current_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=1440))
+            self.current_card[5] = "1440"
+            self.current_card[6] = "G"
+        elif self.current_card[6] == "G":
+            self.current_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=int(float(self.current_card[3]) * int(self.current_card[5]))))
+            self.current_card[5] = str(int(float(self.current_card[3]) * int(self.current_card[5])))
+        elif self.current_card[6] == "l":
+            self.current_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=10))
+            self.current_card[6] = "B"
+        elif self.current_card[6] == "b":
+            self.current_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=10))
+            self.current_card[6] = "B"
+        elif self.current_card[6] == "g":
+            self.current_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=10))
+            self.current_card[6] = "B"
 
-        self.get_card()
-        if self.got_card:
-            self.study_qst_label.setText(self.got_card[1])
+        cards.write_card_ac(self.current_card)
+
+        self.current_card = cards.get_card()
+        if self.current_card:
+            self.study_qst_label.setText(self.current_card[1])
             self.study_ans_label.setText("")
             self.correct_btn.hide()
             self.again_btn.hide()
@@ -890,215 +808,36 @@ class MainWin(QtWidgets.QMainWindow):
             self.study_edit_btn.hide()
 
     def again_btn_clicked(self):
-        if self.got_card:
-            if self.got_card[6] == "l":
-                self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=1))
-                self.write_card_ac()
-            elif self.got_card[6] == "b":
-                self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=1))
-                self.write_card_ac()
-            elif self.got_card[6] == "g":
-                self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=10))
-                self.write_card_ac()
-            elif self.got_card[6] == "L":
-                self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=1))
-                self.got_card[6] = "l"
-                self.write_card_ac()
-            elif self.got_card[6] == "B":
-                self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=1))
-                self.got_card[6] = "b"
-                self.write_card_ac()
-            elif self.got_card[6] == "G":
-                self.got_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=10))
-                self.got_card[5] = 0
-                if float(self.got_card[3]) > 1.3:
-                    self.got_card[3] = str(float(self.got_card[3]) * 0.80)
-                    if float(self.got_card[3]) < 1.3:
-                        self.got_card[3] = "1.3"
-                self.got_card[6] = "g"
-                self.write_card_ac()
+        if self.current_card:
+            if self.current_card[6] == "l":
+                self.current_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=1))
+            elif self.current_card[6] == "b":
+                self.current_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=1))
+            elif self.current_card[6] == "g":
+                self.current_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=10))
+            elif self.current_card[6] == "L":
+                self.current_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=1))
+                self.current_card[6] = "l"
+            elif self.current_card[6] == "B":
+                self.current_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=1))
+                self.current_card[6] = "b"
+            elif self.current_card[6] == "G":
+                self.current_card[4] = str(datetime.datetime.now() + datetime.timedelta(minutes=10))
+                self.current_card[5] = 0
+                if float(self.current_card[3]) > 1.3:
+                    self.current_card[3] = str(float(self.current_card[3]) * 0.80)
+                    if float(self.current_card[3]) < 1.3:
+                        self.current_card[3] = "1.3"
+                self.current_card[6] = "g"
+
+            cards.write_card_ac(self.current_card)
 
             self.correct_btn.hide()
             self.again_btn.hide()
             self.show_ans_btn.show()
-            self.get_card()
-            self.study_qst_label.setText(self.got_card[1])
+            self.current_card = cards.get_card()
+            self.study_qst_label.setText(self.current_card[1])
             self.study_ans_label.setText("")
-
-    def write_card_ac(self):
-        # Writes self.got_card to cards.txt if again or correct is pressed.
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        cards_parts = re.split("DECK\^\^\$=|QUESTION\^\^\$=|ANSWER\^\^\$=|EASE\^\^\$=|DUE\^\^\$=|INTERVAL\^\^\$=|PHASE\^\^\$=", cards_text.read())
-        cards_parts.pop(0)
-        cards_text.close()
-
-        # Removes \n.
-        for i in range(len(cards_parts)):
-            if i % 7 == 6:
-                cards_parts[i] = cards_parts[i][:-1]
-
-        cards = []
-        for i in range(len(cards_parts)):
-            if i % 7 == 6:
-                store_list = [cards_parts[i - 6], cards_parts[i - 5], cards_parts[i - 4], cards_parts[i - 3],
-                              cards_parts[i - 2], cards_parts[i - 1], cards_parts[i]]
-                cards.append(store_list)
-
-        for card in cards:
-            # EASE, DUE, INTERVAL, PHASE.
-            if card[0] == self.got_card[0] and card[1] == self.got_card[1]:
-                card[3] = self.got_card[3]
-                card[4] = self.got_card[4]
-                card[5] = self.got_card[5]
-                card[6] = self.got_card[6]
-                break
-
-        # Writes
-        cards_to_write = []
-        for card in cards:
-            cards_to_write.append(f"DECK^^$={card[0]}QUESTION^^$={card[1]}ANSWER^^$={card[2]}EASE^^$={card[3]}DUE^^$={card[4]}INTERVAL^^$={card[5]}PHASE^^$={card[6]}\n")
-
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "w")
-        cards_text.writelines(cards_to_write)
-        cards_text.close()
-
-    def get_card(self):
-        # Everything due today.
-        # Over-dues in date order.
-        # "l" and "b" due in 30 sec + "g" and "B" due in 3 min, in date order.
-        # "L" in date order.
-        # "G" in date order.
-        # Rest of "l", "b", "g", and "B" in reverse date order.
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        if len(cards_text.read()) == 0:
-            self.got_card = False
-        else:
-            cards_text.seek(0)
-            cards_parts = re.split("DECK\^\^\$=|QUESTION\^\^\$=|ANSWER\^\^\$=|EASE\^\^\$=|DUE\^\^\$=|INTERVAL\^\^\$=|PHASE\^\^\$=", cards_text.read())
-            cards_parts.pop(0)
-            cards_text.close()
-            # Removes those not due today.
-            today = str(datetime.datetime.now())
-            end_of_today = datetime.datetime(int(today[:4]), int(today[5:7]), int(today[8:10]), 23, 59, 59, 999999)
-            i = 0
-            while i < len(cards_parts):
-                if i % 7 == 4 and datetime.datetime.strptime(cards_parts[i], "%Y-%m-%d %H:%M:%S.%f") > end_of_today:
-                    for j in range(7):
-                        cards_parts.pop(i - 4)
-                    i = i - 4
-                else:
-                    i += 1
-
-            if len(cards_parts) == 0:
-                self.got_card = False
-            else:
-                # Removes \n.
-                for i in range(len(cards_parts)):
-                    if i % 7 == 6:
-                        cards_parts[i] = cards_parts[i][:-1]
-
-                cards = []
-                for i in range(len(cards_parts)):
-                    if i % 7 == 6:
-                        store_list = [cards_parts[i - 6], cards_parts[i - 5], cards_parts[i - 4], cards_parts[i - 3], cards_parts[i - 2], cards_parts[i - 1], cards_parts[i]]
-                        cards.append(store_list)
-
-                # Over-dues in order (earliest to latest) using bubble sort.
-                over_dues = []
-                for card in cards:
-                    if datetime.datetime.strptime(card[4], "%Y-%m-%d %H:%M:%S.%f") < datetime.datetime.now():
-                        over_dues.append(card)
-
-                length = len(over_dues)
-                while length > 1:
-                    for i in range(length - 1):
-                        if datetime.datetime.strptime(over_dues[i][4], "%Y-%m-%d %H:%M:%S.%f") > datetime.datetime.strptime(over_dues[i + 1][4], "%Y-%m-%d %H:%M:%S.%f"):
-                            smaller = over_dues[i + 1]
-                            over_dues[i + 1] = over_dues[i]
-                            over_dues[i] = smaller
-                    length -= 1
-
-                if len(over_dues) != 0:
-                    self.got_card = over_dues[0]
-                else:
-                    # "l" and "b" due in 30 sec + "g" and "B" due in 3 min, in order, using bubble sort. THIS IS IF NO OVER-DUES.
-                    l_b_list = []
-                    g_B_list = []
-                    for card in cards:
-                        if (card[6] == "l" or card[6] == "b") and (datetime.datetime.strptime(card[4], "%Y-%m-%d %H:%M:%S.%f") - datetime.datetime.now() < datetime.timedelta(seconds=30)):
-                            l_b_list.append(card)
-
-                    for card in cards:
-                        if (card[6] == "g" or card[6] == "B") and (datetime.datetime.strptime(card[4], "%Y-%m-%d %H:%M:%S.%f") - datetime.datetime.now() < datetime.timedelta(seconds=180)):
-                            g_B_list.append(card)
-
-                    l_b_g_B_list = l_b_list + g_B_list
-
-                    length = len(l_b_g_B_list)
-                    while length > 1:
-                        for i in range(length - 1):
-                            if datetime.datetime.strptime(l_b_g_B_list[i][4], "%Y-%m-%d %H:%M:%S.%f") > datetime.datetime.strptime(l_b_g_B_list[i + 1][4], "%Y-%m-%d %H:%M:%S.%f"):
-                                smaller = l_b_g_B_list[i + 1]
-                                l_b_g_B_list[i + 1] = l_b_g_B_list[i]
-                                l_b_g_B_list[i] = smaller
-                        length -= 1
-
-                    if len(l_b_g_B_list) != 0:
-                        self.got_card = l_b_g_B_list[0]
-                    else:
-                        # "L" in order. This is for "l", and/or "b"s due in 30 sec and no "g", or "B"s due in 3 min.
-                        L_list = []
-                        for card in cards:
-                            if card[6] == "L":
-                                L_list.append(card)
-
-                        length = len(L_list)
-                        while length > 1:
-                            for i in range(length - 1):
-                                if datetime.datetime.strptime(L_list[i][4], "%Y-%m-%d %H:%M:%S.%f") > datetime.datetime.strptime(L_list[i + 1][4], "%Y-%m-%d %H:%M:%S.%f"):
-                                    smaller = L_list[i + 1]
-                                    L_list[i + 1] = L_list[i]
-                                    L_list[i] = smaller
-                            length -= 1
-
-                        if len(L_list) != 0:
-                            self.got_card = L_list[0]
-                        else:
-                            # "G" in order. This is if there are no over-dues; "l" or "b"s due in 30 sec and no "g", or "B"s due in 3 min; and no "L"s.
-                            G_list = []
-                            for card in cards:
-                                if card[6] == "G":
-                                    G_list.append(card)
-
-                            length = len(G_list)
-                            while length > 1:
-                                for i in range(length - 1):
-                                    if datetime.datetime.strptime(G_list[i][4], "%Y-%m-%d %H:%M:%S.%f") > datetime.datetime.strptime(G_list[i + 1][4], "%Y-%m-%d %H:%M:%S.%f"):
-                                        smaller = G_list[i + 1]
-                                        G_list[i + 1] = G_list[i]
-                                        G_list[i] = smaller
-                                length -= 1
-
-                            if len(G_list) != 0:
-                                self.got_card = G_list[0]
-                            else:
-                                # "l", "b", "g", and "B" in reverse order. This is if there are no over-dues; "l" or "b"s due in 30 sec and no "g" or "B"s due in 3 min; "L"s; or "G"s.
-                                l_b_g_B_rev_list = []
-                                for card in cards:
-                                    if card[6] == "l" or card[6] == "b" or card[6] == "g" or card[6] == "B":
-                                        l_b_g_B_rev_list.append(card)
-
-                                # This sorts from earliest to latest but takes the last one.
-                                length = len(l_b_g_B_rev_list)
-                                while length > 1:
-                                    for i in range(length - 1):
-                                        if datetime.datetime.strptime(l_b_g_B_rev_list[i][4], "%Y-%m-%d %H:%M:%S.%f") > datetime.datetime.strptime(l_b_g_B_rev_list[i + 1][4], "%Y-%m-%d %H:%M:%S.%f"):
-                                            smaller = l_b_g_B_rev_list[i + 1]
-                                            l_b_g_B_rev_list[i + 1] = l_b_g_B_rev_list[i]
-                                            l_b_g_B_rev_list[i] = smaller
-                                    length -= 1
-                                if len(l_b_g_B_rev_list) != 0:
-                                    self.got_card = l_b_g_B_rev_list[-1]
 
     def deck_btn_clicked(self, idx):
         self.home_showing = False
@@ -1107,9 +846,7 @@ class MainWin(QtWidgets.QMainWindow):
         self.study_btn.deleteLater()
         self.create_deck_btn.deleteLater()
 
-        decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
-        deck = decks_text.readlines()[idx].replace("\n", "")
-        decks_text.close()
+        deck = decks.get_deck_name(idx)
 
         self.deck_win_verticalLayout = QtWidgets.QVBoxLayout()
         self.deck_win_verticalLayout.setObjectName("deck_win_verticalLayout")
@@ -1249,41 +986,7 @@ class MainWin(QtWidgets.QMainWindow):
         if btn.text() == "OK":
             self.home_showing = True
 
-            decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
-            decks_lines = decks_text.readlines()
-            index = decks_lines.index(deck + "\n")
-            decks_lines.pop(index)
-            decks_text.close()
-
-            decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "w")
-            decks_text.writelines(decks_lines)
-            decks_text.close()
-
-            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-            cards_parts = re.split("DECK\^\^\$=|QUESTION\^\^\$=|ANSWER\^\^\$=|EASE\^\^\$=|DUE\^\^\$=|INTERVAL\^\^\$=|PHASE\^\^\$=", cards_text.read())
-            cards_parts.pop(0)
-            cards_text.close()
-
-            # Removes \n.
-            for i in range(len(cards_parts)):
-                if i % 7 == 6:
-                    cards_parts[i] = cards_parts[i][:-1]
-
-            cards = []
-            for i in range(len(cards_parts)):
-                if i % 7 == 6:
-                    store_list = [cards_parts[i - 6], cards_parts[i - 5], cards_parts[i - 4], cards_parts[i - 3], cards_parts[i - 2], cards_parts[i - 1], cards_parts[i]]
-                    cards.append(store_list)
-
-            # Writes.
-            cards_to_write = []
-            for card in cards:
-                if card[0] != deck:
-                    cards_to_write.append(f"DECK^^$={card[0]}QUESTION^^$={card[1]}ANSWER^^$={card[2]}EASE^^$={card[3]}DUE^^$={card[4]}INTERVAL^^$={card[5]}PHASE^^$={card[6]}\n")
-
-            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "w")
-            cards_text.writelines(cards_to_write)
-            cards_text.close()
+            decks.del_deck(deck)
 
             #Clears the deck layout.
             self.deck_label.deleteLater()
@@ -1295,16 +998,7 @@ class MainWin(QtWidgets.QMainWindow):
 
             # Re-draws main_win.
             # Finds how many are due today.
-            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-            cards_parts = re.split("DUE\^\^\$=|INTERVAL\^\^\$=", cards_text.read())
-            cards_text.close()
-            cards_parts.pop(0)
-            num_to_study = 0
-            today = str(datetime.datetime.now())
-            end_of_today = datetime.datetime(int(today[:4]), int(today[5:7]), int(today[8:10]), 23, 59, 59, 999999)
-            for idx, part in enumerate(cards_parts):
-                if idx % 2 == 0 and datetime.datetime.strptime(part, "%Y-%m-%d %H:%M:%S.%f") <= end_of_today:
-                    num_to_study += 1
+            num_to_study = cards.get_num_to_study()
 
             self.main_win_centralwidget = QtWidgets.QWidget(self)
             self.main_win_centralwidget.setObjectName("main_win_centralwidget")
@@ -1393,9 +1087,8 @@ class MainWin(QtWidgets.QMainWindow):
             font = QtGui.QFont()
             font.setFamily("Verdana")
             font.setPointSize(12)
-            decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
-            decks_lines = decks_text.readlines()
-            for idx, deck in enumerate(decks_lines):
+
+            for idx, deck in enumerate(decks.get_deck_lines()):
                 self.deck_btn = QtWidgets.QPushButton(self.main_win_scrollAreaWidgetContents)
                 self.deck_btn.setMinimumSize(QtCore.QSize(282, 40))
                 self.deck_btn.setMaximumSize(QtCore.QSize(282, 40))
@@ -1423,8 +1116,6 @@ class MainWin(QtWidgets.QMainWindow):
                 # 'self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(idx))' all buttons will have the final value of 'idx'.
                 func = partial(self.deck_btn_clicked, idx)
                 self.deck_btn.clicked.connect(func)
-
-            decks_text.close()
 
             main_win_spacer2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum,
                                                      QtWidgets.QSizePolicy.Expanding)
@@ -1488,16 +1179,7 @@ class MainWin(QtWidgets.QMainWindow):
 
         # Re-draws main_win.
         # Finds how many are due today.
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        cards_parts = re.split("DUE\^\^\$=|INTERVAL\^\^\$=", cards_text.read())
-        cards_text.close()
-        cards_parts.pop(0)
-        num_to_study = 0
-        today = str(datetime.datetime.now())
-        end_of_today = datetime.datetime(int(today[:4]), int(today[5:7]), int(today[8:10]), 23, 59, 59, 999999)
-        for idx, part in enumerate(cards_parts):
-            if idx % 2 == 0 and datetime.datetime.strptime(part, "%Y-%m-%d %H:%M:%S.%f") <= end_of_today:
-                num_to_study += 1
+        num_to_study = cards.get_num_to_study()
 
         self.main_win_centralwidget = QtWidgets.QWidget(self)
         self.main_win_centralwidget.setObjectName("main_win_centralwidget")
@@ -1602,9 +1284,8 @@ class MainWin(QtWidgets.QMainWindow):
             font = QtGui.QFont()
             font.setFamily("Verdana")
             font.setPointSize(12)
-            decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
-            decks_lines = decks_text.readlines()
-            for idx, deck in enumerate(decks_lines):
+
+            for idx, deck in enumerate(decks.get_deck_lines()):
                 self.deck_btn = QtWidgets.QPushButton(self.main_win_scrollAreaWidgetContents)
                 self.deck_btn.setMinimumSize(QtCore.QSize(282, 40))
                 self.deck_btn.setMaximumSize(QtCore.QSize(282, 40))
@@ -1632,8 +1313,6 @@ class MainWin(QtWidgets.QMainWindow):
                 # 'self.deck_btn.clicked.connect(lambda: self.deck_btn_clicked(idx))' all buttons will have the final value of 'idx'.
                 func = partial(self.deck_btn_clicked, idx)
                 self.deck_btn.clicked.connect(func)
-
-            decks_text.close()
 
             main_win_spacer2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
             self.main_win_verticalLayout.addItem(main_win_spacer2)
@@ -1724,46 +1403,16 @@ class SearchWin(QtWidgets.QDialog):
         self.showing = False
 
     def search_btn_clicked(self):
+        import cards
+
         self.search_query = self.input_search.text()
         self.search_page = 1
         self.search_upto = 0
 
-        # Check query exists.
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        cards = re.split("QUESTION\^\^\$=|ANSWER\^\^\$=|EASE\^\^\$=", cards_text.read())
-        cards.pop(0)
-        is_in = False
-        for i in range(len(cards)):
-            if i % 3 == 0 or i % 3 == 1:
-                if self.search_query in cards[i]:
-                    is_in = True
-        cards_text.close()
+        if cards.search_query_exists(self.search_query):
+            qst, ans, self.amt_cards = cards.search_for_cards(self.deck, self.search_query, self.search_upto)
 
-        if is_in:
-            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-            self.search_card_idxs = []
-            cards = cards_text.read().split("DECK^^$=")
-            cards.pop(0)
-            cards_deck_and_rest = []
-            for i in range(len(cards)):
-                cards_deck_and_rest.append(cards[i][:cards[i].index("QUESTION^^$=")])
-                cards_deck_and_rest.append(cards[i][cards[i].index("QUESTION^^$="):])
-            for i in range(len(cards)):
-                if self.deck == cards_deck_and_rest[i*2]:
-                    qst_onwards = cards_deck_and_rest[i*2 + 1].split("QUESTION^^$=")
-                    qst = qst_onwards[1].split("ANSWER^^$=")[0]
-                    ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
-                    if self.search_query in qst or self.search_query in ans:
-                        self.search_card_idxs.append(i)
-
-            if len(self.search_card_idxs) != 0:
-                qst_onwards = cards[self.search_card_idxs[self.search_upto]].split("QUESTION^^$=")
-                qst = qst_onwards[1].split("ANSWER^^$=")[0]
-                ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
-
-            cards_text.close()
-
-            if (not self.showing) and (len(self.search_card_idxs) != 0):
+            if (not self.showing) and (self.amt_cards != 0):
                 self.search_qst_label = QtWidgets.QLabel(self)
                 self.search_qst_label.setMinimumSize(QtCore.QSize(140, 25))
                 self.search_qst_label.setMaximumSize(QtCore.QSize(140, 25))
@@ -1938,8 +1587,7 @@ class SearchWin(QtWidgets.QDialog):
                                                     """)
                 self.search_right_btn.setText("")
                 icon4 = QtGui.QIcon()
-                icon4.addPixmap(QtGui.QPixmap("feather_white\\chevron-right.svg"),
-                                QtGui.QIcon.Normal, QtGui.QIcon.Off)
+                icon4.addPixmap(QtGui.QPixmap("feather_white\\chevron-right.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
                 self.search_right_btn.setIcon(icon4)
                 self.search_right_btn.setIconSize(QtCore.QSize(22, 22))
                 self.search_right_btn.setObjectName("search_right_btn")
@@ -1952,12 +1600,12 @@ class SearchWin(QtWidgets.QDialog):
 
                 self.search_qst_text.setText(qst)
                 self.search_ans_text.setText(ans)
-                self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
+                self.card_of_card_label.setText(f"{self.search_page} of {self.amt_cards}")
 
-            elif len(self.search_card_idxs) != 0:
+            elif self.amt_cards != 0:
                 self.search_qst_text.setText(qst)
                 self.search_ans_text.setText(ans)
-                self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
+                self.card_of_card_label.setText(f"{self.search_page} of {self.amt_cards}")
 
             else:
                 msg = QtWidgets.QMessageBox()
@@ -1978,78 +1626,43 @@ class SearchWin(QtWidgets.QDialog):
             msg.exec_()
 
     def search_save_btn_clicked(self):
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        num_of_cards = len(cards_text.read().split("DECK^^$=")) - 1
-        cards_text.seek(0)
-        cards_parts = re.split("DECK\^\^\$=|QUESTION\^\^\$=|ANSWER\^\^\$=|EASE\^\^\$=", cards_text.read())
-        cards_parts.pop(0)
-        # Math is relevant to the splitting.
-        qst_idx = self.search_card_idxs[self.search_upto] * 4 + 1
-        cards_parts[qst_idx] = self.search_qst_text.toPlainText().strip()
-        cards_parts[qst_idx + 1] = self.search_ans_text.toPlainText().strip()
-        cards_text.close()
-
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "w")
-        cards_parts_f = []
-        for i in range(num_of_cards):
-            n = i * 4
-            cards_parts_f.append(f"DECK^^$={cards_parts[n]}QUESTION^^$={cards_parts[n + 1]}ANSWER^^$={cards_parts[n + 2]}EASE^^$={cards_parts[n + 3]}")
-        cards_text.writelines(cards_parts_f)
-        cards_text.close()
+        cards.save_searched_card(self.deck, self.search_query, self.search_upto, self.search_qst_text.toPlainText(), self.search_ans_text.toPlainText())
 
     def search_del_btn_clicked(self):
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        cards = cards_text.read().split("DECK^^$=")
-        cards.pop(0)
-        cards.pop(self.search_card_idxs[self.search_upto])
-        cards_text.close()
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "w")
-        for idx, i in enumerate(cards):
-            cards[idx] = "DECK^^$=" + i
-        cards_text.writelines(cards)
-        cards_text.close()
-        if len(self.search_card_idxs) == 1:
+        cards.del_searched_card(self.deck, self.search_query, self.search_upto)
+
+        if self.amt_cards == 1:
             self.close()
-        else:
-            self.search_btn_clicked()
-
-    def search_right_btn_clicked(self):
-        if self.search_page != len(self.search_card_idxs):
-            self.search_page += 1
-            self.search_upto += 1
-
-            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-            cards = cards_text.read().split("DECK^^$=")
-            cards.pop(0)
-
-            qst_onwards = cards[self.search_card_idxs[self.search_upto]].split("QUESTION^^$=")
-            qst = qst_onwards[1].split("ANSWER^^$=")[0]
-            ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
+        elif self.search_upto == 0:
+            qst, ans, self.amt_cards = cards.search_for_cards(self.deck, self.search_query, self.search_upto)
 
             self.search_qst_text.setText(qst)
             self.search_ans_text.setText(ans)
-            self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
+            self.card_of_card_label.setText(f"{self.search_page} of {self.amt_cards}")
+        else:
+            self.search_left_btn_clicked()
 
-            cards_text.close()
+    def search_right_btn_clicked(self):
+        if self.search_page != self.amt_cards:
+            self.search_page += 1
+            self.search_upto += 1
+
+            qst, ans, self.amt_cards = cards.search_for_cards(self.deck, self.search_query, self.search_upto)
+
+            self.search_qst_text.setText(qst)
+            self.search_ans_text.setText(ans)
+            self.card_of_card_label.setText(f"{self.search_page} of {self.amt_cards}")
 
     def search_left_btn_clicked(self):
         if self.search_page != 1:
             self.search_page -= 1
             self.search_upto -= 1
 
-            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-            cards = cards_text.read().split("DECK^^$=")
-            cards.pop(0)
-
-            qst_onwards = cards[self.search_card_idxs[self.search_upto]].split("QUESTION^^$=")
-            qst = qst_onwards[1].split("ANSWER^^$=")[0]
-            ans = qst_onwards[1].split("ANSWER^^$=")[1].split("EASE^^$=")[0]
+            qst, ans, self.amt_cards = cards.search_for_cards(self.deck, self.search_query, self.search_upto)
 
             self.search_qst_text.setText(qst)
             self.search_ans_text.setText(ans)
-            self.card_of_card_label.setText(f"{self.search_page} of {len(self.search_card_idxs)}")
-
-            cards_text.close()
+            self.card_of_card_label.setText(f"{self.search_page} of {self.amt_cards}")
 
 
 class CreateDeckWin(QtWidgets.QDialog):
@@ -2178,9 +1791,7 @@ class CreateDeckWin(QtWidgets.QDialog):
         self.setWindowIcon(QtGui.QIcon("feather_601060\\plus.svg"))
 
     def create_ok_btn_clicked(self):
-        decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
-        decks_lines = decks_text.readlines()
-        decks_text.close()
+        decks_lines = decks.get_deck_lines()
 
         if "DECK^^$=" in self.create_input_text.text() or "QUESTION^^$=" in self.create_input_text.text() or "ANSWER^^$" in self.create_input_text.text() or "EASE^^$" in self.create_input_text.text() or "DUE^^$" in self.create_input_text.text() or "INTERVAL^^$" in self.create_input_text.text() or "PHASE^^$" in self.create_input_text.text():
             msg = QtWidgets.QMessageBox()
@@ -2207,20 +1818,8 @@ class CreateDeckWin(QtWidgets.QDialog):
             msg.setText("That deck already exists.")
             msg.exec_()
         else:
-            decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "a")
-            decks_text.write(self.create_input_text.text().strip() + "\n")
-            decks_text.close()
-
-            # Writes the decks in alphabetical order so the deck buttons will also be in order and have their index.
-            # match to the corresponding line in decks.txt.
-            decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "r")
-            decks_sorted = decks_text.readlines()
-            decks_sorted.sort(key=str.lower)
-            decks_text.close()
-
-            decks_text = open(f"{self.temp_path}\\..\\MemoryGain\\decks.txt", "w")
-            decks_text.writelines(decks_sorted)
-            decks_text.close()
+            deck_name = self.create_input_text.text().strip()
+            decks.add_deck(deck_name)
 
             self.refresher()
             self.close()
@@ -2342,13 +1941,6 @@ class AddCardsWin(QtWidgets.QDialog):
         self.setWindowIcon(QtGui.QIcon("feather_601060\\plus-square.svg"))
 
     def add_card_btn_clicked(self):
-        cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-        cards = cards_text.read().split("QUESTION^^$=")
-        cards.pop(0)
-        qsts = []
-        for card in cards:
-            qsts.append(card.split("ANSWER^^$=")[0])
-        cards_text.close()
         if self.input_qst.toPlainText().strip() == "":
             msg = QtWidgets.QMessageBox()
             msg.setWindowTitle("Invalid")
@@ -2357,15 +1949,9 @@ class AddCardsWin(QtWidgets.QDialog):
             msg.setIcon(QtWidgets.QMessageBox.Warning)
             msg.setText("Please enter a question")
             msg.exec_()
-        elif self.input_qst.toPlainText().strip() in qsts:
-            msg = QtWidgets.QMessageBox()
-            msg.setWindowTitle("Duplicate")
-            center = QDesktopWidget().availableGeometry().center()
-            msg.move(center)
-            msg.setIcon(QtWidgets.QMessageBox.Information)
-            msg.setText("That question already exists. Card not added.")
-            msg.exec_()
-        elif "DECK^^$=" in self.input_qst.toPlainText() or "QUESTION^^$=" in self.input_qst.toPlainText() or "ANSWER^^$" in self.input_qst.toPlainText() or "EASE^^$" in self.input_qst.toPlainText() or "DUE^^$=" in self.input_qst.toPlainText() or "INTERVAL^^$=" in self.input_qst.toPlainText() or "PHASE^^$=" in self.input_qst.toPlainText() or "DECK^^$=" in self.input_ans.toPlainText() or "QUESTION^^$=" in self.input_ans.toPlainText() or "ANSWER^^$" in self.input_ans.toPlainText() or "EASE^^$" in self.input_ans.toPlainText() or "DUE^^$=" in self.input_ans.toPlainText() or "INTERVAL^^$=" in self.input_ans.toPlainText() or "PHASE^^$=" in self.input_ans.toPlainText():
+            return
+
+        if "DECK^^$=" in self.input_qst.toPlainText() or "QUESTION^^$=" in self.input_qst.toPlainText() or "ANSWER^^$" in self.input_qst.toPlainText() or "EASE^^$" in self.input_qst.toPlainText() or "DUE^^$=" in self.input_qst.toPlainText() or "INTERVAL^^$=" in self.input_qst.toPlainText() or "PHASE^^$=" in self.input_qst.toPlainText() or "DECK^^$=" in self.input_ans.toPlainText() or "QUESTION^^$=" in self.input_ans.toPlainText() or "ANSWER^^$" in self.input_ans.toPlainText() or "EASE^^$" in self.input_ans.toPlainText() or "DUE^^$=" in self.input_ans.toPlainText() or "INTERVAL^^$=" in self.input_ans.toPlainText() or "PHASE^^$=" in self.input_ans.toPlainText():
             msg = QtWidgets.QMessageBox()
             msg.setWindowTitle("Invalid")
             center = QDesktopWidget().availableGeometry().center()
@@ -2373,15 +1959,22 @@ class AddCardsWin(QtWidgets.QDialog):
             msg.setIcon(QtWidgets.QMessageBox.Warning)
             msg.setText("Due to the way items are stored, strings cannot contain\n\"DECK^^$=\", \"QUESTION^^$=\", \"ANSWER^^$=\", \"EASE^^$=\"\n\"DUE^^$=\", \"INTERVAL^^$=\", or \"PHASE^^$=\".")
             msg.exec_()
-        else:
-            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "a")
-            cards_text.write(f"DECK^^$={self.deck}QUESTION^^$={self.input_qst.toPlainText()}ANSWER^^$={self.input_ans.toPlainText()}EASE^^$=2.5DUE^^$={datetime.datetime.now()}INTERVAL^^$=0PHASE^^$=L\n")
-            self.input_qst.clear()
-            self.input_ans.clear()
-            cards_text.close()
+            return
 
-            cards_text = open(f"{self.temp_path}\\..\\MemoryGain\\cards.txt", "r")
-            cards_text.close()
+        qst_exists = cards.check_qst_exists(self.input_qst.toPlainText().strip())
+        if qst_exists:
+            msg = QtWidgets.QMessageBox()
+            msg.setWindowTitle("Duplicate")
+            center = QDesktopWidget().availableGeometry().center()
+            msg.move(center)
+            msg.setIcon(QtWidgets.QMessageBox.Information)
+            msg.setText("That question already exists. Card not added.")
+            msg.exec_()
+            return
+
+        cards.add_card(self.deck, self.input_qst.toPlainText().strip(), self.input_ans.toPlainText().strip())
+        self.input_qst.clear()
+        self.input_ans.clear()
 
 
 if __name__ == "__main__":
