@@ -16,7 +16,7 @@ def cards_on_device():
     Checks if cards.txt is on device, if not it is added. decks.decks_on_device() must be called first to make
     the MemoryGain dir.
     """
-    cards_found = os.path.exists(f"{temp_path}\\..\\MemoryGain\\decks.txt")
+    cards_found = os.path.exists(f"{temp_path}\\..\\MemoryGain\\cards.txt")
 
     if not cards_found:
         os.system(f"n > {temp_path}\\..\\MemoryGain\\cards.txt")
