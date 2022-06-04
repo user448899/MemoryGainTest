@@ -19,7 +19,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 from PyQt5.QtWidgets import QDesktopWidget
 import datetime
-import re
 import tempfile
 import urllib.request
 import os
