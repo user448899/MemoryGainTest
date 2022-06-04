@@ -4,9 +4,24 @@ This module is for managing decks. It contains functions for manipulating decks.
 
 import tempfile
 import re
+import os
 
 
 temp_path = tempfile.gettempdir()
+
+
+def decks_on_device():
+    """
+    Checks if decks.txt is on the device, if not it is added.
+    """
+    memorygaindir_found = os.path.exists(f"{temp_path}\\..\\MemoryGain")
+    decks_found = os.path.exists(f"{temp_path}\\..\\MemoryGain\\decks.txt")
+
+    if not memorygaindir_found:
+        os.system(f"md {temp_path}\\..\\MemoryGain")
+
+    if not decks_found:
+        os.system(f"n > {temp_path}\\..\\MemoryGain\\decks.txt")
 
 
 def get_deck_lines():

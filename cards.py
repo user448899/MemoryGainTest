@@ -5,9 +5,21 @@ This module is for managing cards. It contains functions for manipulating cards.
 import tempfile
 import re
 import datetime
+import os
 
 
 temp_path = tempfile.gettempdir()
+
+
+def cards_on_device():
+    """
+    Checks if cards.txt is on device, if not it is added. decks.decks_on_device() must be called first to make
+    the MemoryGain dir.
+    """
+    cards_found = os.path.exists(f"{temp_path}\\..\\MemoryGain\\decks.txt")
+
+    if not cards_found:
+        os.system(f"n > {temp_path}\\..\\MemoryGain\\cards.txt")
 
 
 def get_num_to_study():
